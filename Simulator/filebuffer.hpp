@@ -112,6 +112,15 @@ class FileBuffer {
 			buffer.push_back(byte_8);
 		}
 
+		void write(FileBuffer other_file_buffer)
+		{
+			char *bytes = other_file_buffer.data();
+
+			for (int i = 0; i < other_file_buffer.size(); i++) {
+				buffer.push_back(bytes[i]);
+			}
+		}
+
 		char *data()
 		{
 			return buffer.data();

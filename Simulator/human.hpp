@@ -5,6 +5,7 @@
 
 #include "libs/linear_algebra.hpp"
 #include "random.hpp"
+#include "filebuffer.hpp"
 
 using namespace std;
 
@@ -63,6 +64,22 @@ class Human {
 			if (position[1] > COMMUNITY_SIZE - 1) {
 				position[1] = 0;
 			}
+		}
+
+		// Returns a FileBuffer that describes the Human in the CONTA file format
+
+		FileBuffer as_file_buffer()
+		{
+			FileBuffer buffer;
+
+			// Format:
+			// [ uint16 POSITION_X ]
+			// [ uint16 POSITION_Y ]
+
+			buffer.write((uint16_t) position[0]);
+			buffer.write((uint16_t) position[1]);
+
+			return buffer;
 		}
 };
 

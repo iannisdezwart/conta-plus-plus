@@ -35,6 +35,9 @@
 		"valarray": "cpp",
 		"variant": "cpp",
 		"ratio": "cpp",
-		"cstddef": "cpp"
+		"cstddef": "cpp",
+		"array": "cpp",
+		"iomanip": "cpp",
+		"limits": "cpp"
 	}
 }

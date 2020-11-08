@@ -102,7 +102,7 @@ class Population {
 			buffer.write("CONTA\n");
 			buffer.write(size);
 			buffer.write(communities);
-			buffer.write("\n");
+			buffer.write('\n');
 
 			fwrite(buffer.data(), 1, buffer.size(), file);
 		}
@@ -112,8 +112,7 @@ class Population {
 			FileBuffer buffer;
 
 			for (int i = 0; i < size; i++) {
-				buffer.write((uint16_t) humans[i].position[0]);
-				buffer.write((uint16_t) humans[i].position[1]);
+				buffer.write(humans[i].as_file_buffer());
 			}
 
 			buffer.write('\n');
