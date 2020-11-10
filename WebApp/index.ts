@@ -70,6 +70,7 @@ interface File {
 const files = new Map<string, File>([
 	[ '/', { name: 'index.html', mimeType: 'text/html' } ],
 	[ '/style', { name: 'style.css', mimeType: 'text/css' } ],
+	[ '/file-buffer', { name: 'file-buffer.js', mimeType: 'text/javascript' } ],
 	[ '/script', { name: 'script.js', mimeType: 'text/javascript' } ]
 ])
 
