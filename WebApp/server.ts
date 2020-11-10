@@ -1,11 +1,29 @@
 import * as http from 'http'
 import * as fs from 'fs'
+import { URL } from 'url'
 
 const runSimulator = (
 	req: http.IncomingMessage,
 	res: http.ServerResponse
 ) => {
 	// Todo: make
+}
+
+const listRuns = (
+	res: http.ServerResponse
+) => {
+	const directoryPath = `${ __dirname }/../Simulator/output/`
+	const files = fs.readdirSync(directoryPath)
+		.map(file => ({
+			id: file.replace('.conta', ''),
+			dateCreated: fs.statSync(directoryPath + file).ctime.getTime()
+		}))
+
+	// Sort files by creation date
+
+	files.sort((file1, file2) => file2.dateCreated - file1.dateCreated)
+
+	res.end(JSON.stringify(files))
 }
 
 // Sanitises a hex string
@@ -71,6 +89,8 @@ const files = new Map<string, File>([
 	[ '/', { name: 'index.html', mimeType: 'text/html' } ],
 	[ '/style', { name: 'style.css', mimeType: 'text/css' } ],
 	[ '/file-buffer', { name: 'file-buffer.js', mimeType: 'text/javascript' } ],
+	[ '/list-runs', { name: 'list-runs.html', mimeType: 'text/html' } ],
+	[ '/list-runs-script', { name: 'list-runs.js', mimeType: 'text/javascript' } ],
 	[ '/perform-run', { name: 'perform-run.html', mimeType: 'text/html' } ],
 	[ '/perform-run-script', { name: 'perform-run.js', mimeType: 'text/javascript' } ],
 	[ '/view-run', { name: 'view-run.html', mimeType: 'text/html' } ],
@@ -83,7 +103,8 @@ const sendFile = (
 	req: http.IncomingMessage,
 	res: http.ServerResponse
 ) => {
-	const file = files.get(req.url)
+	const url = new URL(req.url, 'http://localhost')
+	const file = files.get(url.pathname)
 
 	if (file == null) {
 		// The file does not exist, send 404
@@ -127,6 +148,8 @@ const server = http.createServer((req, res) => {
 
 		if (req.url == '/run') {
 			runSimulator(req, res)
+		} else if (req.url == '/list-runs') {
+			listRuns(res)
 		} else if (req.url == '/get-run-output') {
 			sendRunOutput(req, res)
 		} else {
