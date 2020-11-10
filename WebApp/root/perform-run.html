@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="/style">
+		<link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:wght@400;700&family=Ubuntu:wght@300;400;700&display=swap" rel="stylesheet">
+		<script src="/perform-run-script" charset="utf-8"></script>
+		<title>Perform Run | Conta++ WebApp</title>
+	</head>
+	<body>
+		<div class="page">
+			<h1>Conta++ WebApp</h1>
+			<h3><a href="/">Home</a> > Perform Run</h3>
+
+			<p>Select the settings for the run:</p>
+
+			<div class="settings">
+				<div class="setting">
+					<p>Population Size:</p>
+					<input type="number" id="population-size" value="1000">
+				</div>
+				<div class="setting">
+					<p>Number of Communities:</p>
+					<input type="number" id="population-size" value="10">
+				</div>
+				<div class="setting">
+					<p>Spread Range (px):</p>
+					<input type="number" id="spread-range" value="20">
+				</div>
+			</div>
+
+			<a class="button" onclick="performRun()">Perform Run</a>
+		</div>
+	</body>
+</html>
