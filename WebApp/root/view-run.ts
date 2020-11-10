@@ -1,13 +1,19 @@
 interface ContaFileFormat {
-	size: number
+	populationSize: number
 	communities: number
 	ticks: HumanFormat[][]
 }
 
 interface HumanFormat {
+	communityID: number
 	positionX: number
 	positionY: number
 }
+
+let data: ContaFileFormat
+let canvasses: HTMLCanvasElement[]
+let ctxes: CanvasRenderingContext2D[]
+let animationIntervalID: number
 
 // This function gets a run output
 
@@ -45,7 +51,7 @@ const parseContaFile = (
 	buffer: ArrayBuffer
 ): ContaFileFormat => {
 	const contaFileFormat: ContaFileFormat = {
-		size: null,
+		populationSize: null,
 		communities: null,
 		ticks: []
 	}
@@ -60,7 +66,7 @@ const parseContaFile = (
 
 	// Read the population size
 
-	contaFileFormat.size = fileBuffer.readInt32()
+	contaFileFormat.populationSize = fileBuffer.readInt32()
 
 	// Read the number of communities
 
@@ -75,11 +81,12 @@ const parseContaFile = (
 	// Read all ticks
 
 	while (fileBuffer.offset < fileBuffer.size()) {
-		contaFileFormat.ticks.push(Array(contaFileFormat.size))
+		contaFileFormat.ticks.push(Array(contaFileFormat.populationSize))
 		const humans = contaFileFormat.ticks[contaFileFormat.ticks.length - 1]
 
-		for (let i = 0; i < contaFileFormat.size; i++) {
+		for (let i = 0; i < contaFileFormat.populationSize; i++) {
 			humans[i] = {
+				communityID: fileBuffer.readUint16(),
 				positionX: fileBuffer.readUint16(),
 				positionY: fileBuffer.readUint16()
 			}
@@ -88,3 +95,89 @@ const parseContaFile = (
 
 	return contaFileFormat
 }
+
+const renderTick = (
+	tickNumber: number
+) => {
+	// Clear all ctxes
+
+	for (let i = 0; i < ctxes.length; i++) {
+		ctxes[i].clearRect(0, 0, canvasses[i].width, canvasses[i].height)
+	}
+
+	// Draw all humans
+
+	for (let i = 0; i < data.populationSize; i++) {
+		const { communityID, positionX, positionY } = data.ticks[tickNumber][i]
+		const ctx = ctxes[communityID]
+
+		ctx.beginPath()
+		ctx.arc(positionX, positionY, 3, 0, 2 * Math.PI)
+		ctx.fillStyle = '#aaa'
+		ctx.fill()
+		ctx.closePath()
+	}
+
+	// Update progress bar
+
+	const progressBar = document.querySelector<HTMLSpanElement>('.progress')
+	progressBar.style.width = (tickNumber / data.ticks.length * 100).toString() + '%'
+}
+
+const startAnimation = () => {
+	// Reset the interval
+
+	clearInterval(animationIntervalID)
+
+	let i = 0
+	const renderNextTick = () => renderTick(i++)
+
+	// Render the first tick
+
+	renderNextTick()
+
+	// Render the next ticks
+
+	animationIntervalID = window.setInterval(() => {
+		renderNextTick()
+
+		// Stop the animation when we rendered all ticks
+
+		if (i == data.ticks.length) {
+			clearInterval(animationIntervalID)
+		}
+	}, 16.7)
+}
+
+// When page loads, show the run
+
+addEventListener('load', async () => {
+	const searchParams = new URLSearchParams(location.search)
+	const output = await getRunOutput(searchParams.get('id'))
+	data = parseContaFile(output)
+
+	// Create communities
+
+	const canvassesContainer = document.querySelector<HTMLDivElement>('.communities')
+	canvasses = Array(data.communities)
+	ctxes = Array(data.communities)
+
+	canvassesContainer.innerHTML = ''
+
+	for (let i = 0; i < data.communities; i++) {
+		// Create canvas
+
+		const canvas = document.createElement('canvas')
+		canvas.classList.add('community')
+		canvas.width = 400
+		canvas.height = 400
+
+		// Add canvas
+
+		canvassesContainer.appendChild(canvas)
+		canvasses[i] = canvas
+		ctxes[i] = canvas.getContext('2d')
+	}
+
+	console.log(data)
+})
