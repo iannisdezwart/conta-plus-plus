@@ -96,7 +96,7 @@ class FileBuffer {
 	readUint16() {
 		const byte0 = this.readByte()
 		const byte1 = this.readByte()
-		const asUint16 = byte0 << 8 + byte1
+		const asUint16 = byte0 << 8 | byte1
 
 		return asUint16
 	}
@@ -104,7 +104,7 @@ class FileBuffer {
 	readInt16() {
 		const byte0 = this.readByte()
 		const byte1 = this.readByte()
-		const asUint16 = byte0 << 8 + byte1
+		const asUint16 = byte0 << 8 | byte1
 
 		if (asUint16 & (1 << 15)) return ~asUint16
 		return asUint16
@@ -115,7 +115,7 @@ class FileBuffer {
 		const byte1 = this.readByte()
 		const byte2 = this.readByte()
 		const byte3 = this.readByte()
-		const asUint32 = byte0 << 24 + byte1 << 16 + byte2 << 8 + byte3
+		const asUint32 = byte0 << 24 | byte1 << 16 | byte2 << 8 | byte3
 
 		return asUint32
 	}
@@ -125,7 +125,7 @@ class FileBuffer {
 		const byte1 = this.readByte()
 		const byte2 = this.readByte()
 		const byte3 = this.readByte()
-		const asUint32 = byte0 << 24 + byte1 << 16 + byte2 << 8 + byte3
+		const asUint32 = byte0 << 24 | byte1 << 16 | byte2 << 8 | byte3
 
 		if (asUint32 & (1 << 31)) return ~asUint32
 		return asUint32
