@@ -71,7 +71,10 @@ const files = new Map<string, File>([
 	[ '/', { name: 'index.html', mimeType: 'text/html' } ],
 	[ '/style', { name: 'style.css', mimeType: 'text/css' } ],
 	[ '/file-buffer', { name: 'file-buffer.js', mimeType: 'text/javascript' } ],
-	[ '/script', { name: 'script.js', mimeType: 'text/javascript' } ]
+	[ '/perform-run', { name: 'perform-run.html', mimeType: 'text/html' } ],
+	[ '/perform-run-script', { name: 'perform-run.js', mimeType: 'text/javascript' } ],
+	[ '/view-run', { name: 'view-run.html', mimeType: 'text/html' } ],
+	[ '/view-run-script', { name: 'view-run.js', mimeType: 'text/javascript' } ]
 ])
 
 // Function that sends a defined file
