@@ -17,6 +17,15 @@ const listRuns = () => new Promise<Run[]>((resolve, reject) => {
 	req.send()
 })
 
+const formatDateTime = (
+	date: Date
+) => {
+	// Don't look at this monster please
+	// All it does is return "YYYY-MM-DD hh:mm:ss"
+
+	return `${ date.getFullYear() }-${ date.getMonth().toString().padStart(2, '0') }-${ (date.getDate() + 1).toString().padStart(2, '0') } ${ date.getHours().toString().padStart(2, '0') }:${ date.getMinutes().toString().padStart(2, '0') }:${ date.getSeconds().toString().padStart(2, '0') }`
+}
+
 addEventListener('load', async () => {
 	const container = document.querySelector('.runs-container')
 	const runs = await listRuns()
@@ -35,8 +44,7 @@ addEventListener('load', async () => {
 
 	for (let run of runs) {
 		const date = new Date(run.dateCreated)
-		const dateString =
-			`${ date.getFullYear() }-${ date.getMonth() }-${ date.getDate() + 1 }`
+		const dateString = formatDateTime(date)
 
 		dynamicHTML += /* html */ `
 		<tr>
