@@ -115,8 +115,6 @@ class Population {
 				buffer.write(humans[i].as_file_buffer());
 			}
 
-			buffer.write('\n');
-
 			fwrite(buffer.data(), 1, buffer.size(), file);
 		}
 };
