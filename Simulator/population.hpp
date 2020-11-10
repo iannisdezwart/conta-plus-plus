@@ -33,12 +33,18 @@ class Population {
 			// Initialise each human
 
 			for (int i = 0; i < size; i++) {
+				// Calculate a random starting position
+
 				Vector<2> starting_position({
 					random_float() * COMMUNITY_SIZE,
 					random_float() * COMMUNITY_SIZE
 				});
 
-				humans[i] = Human(starting_position);
+				// Calculate a random community id
+
+				uint16_t starting_community = random_float() * communities;
+
+				humans[i] = Human(starting_position, starting_community);
 			}
 
 			write_file_header();
