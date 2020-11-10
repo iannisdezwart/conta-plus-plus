@@ -1,4 +1,6 @@
 /Simulator/output/
+/Simulator/index
+/Simulator/index.o
 /.vscode/
 /WebApp/node_modules
 /WebApp/package-lock.json
