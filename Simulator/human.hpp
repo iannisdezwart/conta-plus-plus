@@ -17,13 +17,17 @@ class Human {
 		Vector<2> velocity;
 		Vector<2> acceleration;
 
+		uint16_t community_id;
+
 		static const int max_velocity = 5;
 
-		Human(Vector<2> starting_position)
+		Human(Vector<2> starting_position, uint16_t starting_community)
 		{
 			position = starting_position;
 			velocity.nullify();
 			acceleration.nullify();
+
+			community_id = starting_community;
 		}
 
 		void move()
@@ -73,9 +77,11 @@ class Human {
 			FileBuffer buffer;
 
 			// Format:
+			// [ uint16 COMMUNITY_ID ]
 			// [ uint16 POSITION_X ]
 			// [ uint16 POSITION_Y ]
 
+			buffer.write((uint16_t) community_id);
 			buffer.write((uint16_t) position[0]);
 			buffer.write((uint16_t) position[1]);
 
