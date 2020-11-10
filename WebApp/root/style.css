@@ -100,9 +100,13 @@ input {
 }
 
 .runs-container table {
-	border-collapse: collapse;
 	background-color: #2e2e2e;
+
 	width: 100%;
+
+	border-collapse: collapse;
+	border-radius: 2em;
+	overflow: hidden;
 }
 
 .runs-container thead {
