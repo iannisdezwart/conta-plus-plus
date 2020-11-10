@@ -1,13 +1,3 @@
-// File format:
-// "CONTA\n"
-// [ int32 size ]
-// [ int32 communities ]
-// "\n"
-// `number_of_ticks` times:
-// `size` times:
-// [ uint16 POSITION_X ]
-// [ uint16 POSITION_Y ]
-
 interface ContaFileFormat {
 	size: number
 	communities: number
@@ -40,6 +30,16 @@ const getRunOutput = (
 })
 
 // This function creates a ContaFileFormat from a raw conta run output file
+
+// Conta file format:
+// "CONTA\n"
+// [ int32 size ]
+// [ int32 communities ]
+// "\n"
+// `number_of_ticks` times:
+// `size` times:
+// [ uint16 POSITION_X ]
+// [ uint16 POSITION_Y ]
 
 const parseContaFile = (
 	buffer: ArrayBuffer
