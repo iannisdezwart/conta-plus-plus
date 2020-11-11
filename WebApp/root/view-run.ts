@@ -8,6 +8,8 @@ interface HumanFormat {
 	communityID: number
 	positionX: number
 	positionY: number
+	infected: boolean
+	recovered: boolean
 }
 
 let data: ContaFileFormat
@@ -46,6 +48,7 @@ const getRunOutput = (
 // `size` times:
 // [ uint16 POSITION_X ]
 // [ uint16 POSITION_Y ]
+// [ uint8 FLAGS ] ( 0 0 0 0 0 0 RECOVERED INFECTED )
 
 const parseContaFile = (
 	buffer: ArrayBuffer
@@ -85,11 +88,15 @@ const parseContaFile = (
 		const humans = contaFileFormat.ticks[contaFileFormat.ticks.length - 1]
 
 		for (let i = 0; i < contaFileFormat.populationSize; i++) {
-			humans[i] = {
-				communityID: fileBuffer.readUint16(),
-				positionX: fileBuffer.readUint16(),
-				positionY: fileBuffer.readUint16()
-			}
+			const communityID = fileBuffer.readUint16()
+			const positionX = fileBuffer.readUint16()
+			const positionY = fileBuffer.readUint16()
+
+			const flags = fileBuffer.readUint8()
+			const infected = Boolean(flags & (1 << 0))
+			const recovered = Boolean(flags & (1 << 1))
+
+			humans[i] = { communityID, positionX, positionY, infected, recovered }
 		}
 	}
 
@@ -108,12 +115,19 @@ const renderTick = (
 	// Draw all humans
 
 	for (let i = 0; i < data.populationSize; i++) {
-		const { communityID, positionX, positionY } = data.ticks[tickNumber][i]
+		const {
+			communityID,
+			positionX,
+			positionY,
+			infected,
+			recovered
+		} = data.ticks[tickNumber][i]
+
 		const ctx = ctxes[communityID]
 
 		ctx.beginPath()
 		ctx.arc(positionX, positionY, 3, 0, 2 * Math.PI)
-		ctx.fillStyle = '#aaa'
+		ctx.fillStyle = recovered ? '#3f3' : infected ? '#f33' : '#aaa'
 		ctx.fill()
 		ctx.closePath()
 	}
