@@ -7,9 +7,9 @@
 #include "random.hpp"
 #include "filebuffer.hpp"
 
-using namespace std;
+class Population;
 
-extern const int COMMUNITY_SIZE;
+using namespace std;
 
 class Human {
 	public:
@@ -17,9 +17,11 @@ class Human {
 		Vector<2> velocity;
 		Vector<2> acceleration;
 
-		uint16_t community_id;
+		bool infected = false;
+		int ticks_infected = 0;
+		bool recovered = false;
 
-		static const int max_velocity = 5;
+		uint16_t community_id;
 
 		Human(Vector<2> starting_position, uint16_t starting_community)
 		{
@@ -30,11 +32,11 @@ class Human {
 			community_id = starting_community;
 		}
 
-		void move()
+		void move(Vector<2> new_acceleration)
 		{
 			// Generate random acceleration
 
-			acceleration = Vector<2>::from_angle(random_float() * 2 * M_PI);
+			acceleration = new_acceleration;
 
 			// Calculate velocity
 
@@ -42,9 +44,9 @@ class Human {
 
 			// Cap maximum velocity
 
-			if (velocity.length() > max_velocity) {
+			if (velocity.length() > HUMAN_MAX_VELOCITY) {
 				velocity.normalise();
-				velocity *= max_velocity;
+				velocity *= HUMAN_MAX_VELOCITY;
 			}
 
 			// Calculate new position
@@ -80,10 +82,14 @@ class Human {
 			// [ uint16 COMMUNITY_ID ]
 			// [ uint16 POSITION_X ]
 			// [ uint16 POSITION_Y ]
+			// [ uint8 FLAGS ] ( 0 0 0 0 0 0 RECOVERED INFECTED )
 
 			buffer.write((uint16_t) community_id);
 			buffer.write((uint16_t) position[0]);
 			buffer.write((uint16_t) position[1]);
+
+			uint8_t flags = (recovered << 1) | (infected << 0);
+			buffer.write(flags);
 
 			return buffer;
 		}
