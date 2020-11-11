@@ -161,6 +161,11 @@ class Vector {
 			return sqrt(square_sum);
 		}
 
+		double distance(Vector<size> other_vector)
+		{
+			return abs(operator-(other_vector).length());
+		}
+
 		double angle()
 		{
 			if (size != 2) throw WRONG_DIMENSION;
