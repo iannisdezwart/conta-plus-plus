@@ -9,7 +9,21 @@ const listRuns = () => new Promise<Run[]>((resolve, reject) => {
 	req.open('POST', '/list-runs')
 
 	req.addEventListener('load', () => {
-		resolve(JSON.parse(req.responseText) as Run[])
+		const runs: Run[] = req.responseText
+			.substring(0, req.responseText.length - 1) // Remove trailing '\n'
+			.split('\n') // Split into lines
+			.map(el => {
+				const split = el.split('\t')
+
+				const run: Run = {
+					id: split[0].replace('.conta', ''),
+					dateCreated: parseInt(split[1]) * 1000
+				}
+
+				return run
+			}) // Seperate file name and date
+
+		resolve(runs)
 	})
 
 	req.addEventListener('error', reject)
