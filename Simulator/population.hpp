@@ -2,35 +2,38 @@
 #define POPULATION_HEADER
 
 #include <bits/stdc++.h>
+
 #include "human.hpp"
 #include "filebuffer.hpp"
+#include "simulation_settings.hpp"
 
 using namespace std;
 
 class Population {
 	public:
 		FILE *file;
+		SimulationSettings& settings;
 
 		int tick_count = 0;
 
 		vector<vector<Human>> communities;
 
-		Population(string output_file_name)
+		Population(string output_file_name, SimulationSettings& simulation_settings) : settings(simulation_settings)
 		{
 			file = fopen(output_file_name.c_str(), "w");
 
 			// Create all community vectors
 
-			for (int i = 0; i < NUMBER_OF_COMMUNITIES; i++) {
+			for (int i = 0; i < settings.NUMBER_OF_COMMUNITIES; i++) {
 				vector<Human> humans_on_this_community;
 				communities.push_back(humans_on_this_community);
 			}
 
-			int infected_human_index = random_float() * POPULATION_SIZE;
+			int infected_human_index = random_float() * settings.POPULATION_SIZE;
 
 			// Initialise each human
 
-			for (int i = 0; i < POPULATION_SIZE; i++) {
+			for (int i = 0; i < settings.POPULATION_SIZE; i++) {
 				// Calculate a random starting position
 
 				Vector<2> starting_position({
@@ -40,8 +43,8 @@ class Population {
 
 				// Calculate a random community id
 
-				uint16_t starting_community = random_float() * NUMBER_OF_COMMUNITIES;
-				Human human(starting_position, starting_community);
+				uint16_t starting_community = random_float() * settings.NUMBER_OF_COMMUNITIES;
+				Human human(starting_position, starting_community, settings);
 
 				// Infect this Human if it its index matches
 
@@ -69,7 +72,7 @@ class Population {
 
 			// Loop over each community
 
-			for (int i = 0; i < NUMBER_OF_COMMUNITIES; i++) {
+			for (int i = 0; i < settings.NUMBER_OF_COMMUNITIES; i++) {
 				vector<Human> *humans = &communities[i];
 
 				// Loop over each Human on the current community
@@ -98,15 +101,15 @@ class Population {
 								double distance = human->position.distance(other_human->position);
 
 								if (
-									distance <= HUMAN_SPREAD_RANGE
-									&& random_float() < HUMAN_SPREAD_PROBABILITY
+									distance <= settings.HUMAN_SPREAD_RANGE
+									&& random_float() < settings.HUMAN_SPREAD_PROBABILITY
 								) other_human->infected = true;
 							}
 						}
 
 						// Recover after HUMAN_INFECTION_DURATION ticks
 
-						if (human->ticks_infected >= HUMAN_INFECTION_DURATION) {
+						if (human->ticks_infected >= settings.HUMAN_INFECTION_DURATION) {
 							human->infected = false;
 							human->recovered = true;
 						}
@@ -122,8 +125,8 @@ class Population {
 			FileBuffer buffer;
 
 			buffer.write("CONTA\n");
-			buffer.write(POPULATION_SIZE);
-			buffer.write(NUMBER_OF_COMMUNITIES);
+			buffer.write(settings.POPULATION_SIZE);
+			buffer.write(settings.NUMBER_OF_COMMUNITIES);
 			buffer.write('\n');
 
 			fwrite(buffer.data(), 1, buffer.size(), file);
@@ -135,7 +138,7 @@ class Population {
 
 			// Loop over each community
 
-			for (int i = 0; i < NUMBER_OF_COMMUNITIES; i++) {
+			for (int i = 0; i < settings.NUMBER_OF_COMMUNITIES; i++) {
 				vector<Human> *humans = &communities[i];
 
 				// Loop over each Human on the current community

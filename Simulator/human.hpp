@@ -6,6 +6,7 @@
 #include "libs/linear_algebra.hpp"
 #include "random.hpp"
 #include "filebuffer.hpp"
+#include "simulation_settings.hpp"
 
 class Population;
 
@@ -13,6 +14,8 @@ using namespace std;
 
 class Human {
 	public:
+		SimulationSettings& settings;
+
 		Vector<2> position;
 		Vector<2> velocity;
 		Vector<2> acceleration;
@@ -23,7 +26,7 @@ class Human {
 
 		uint16_t community_id;
 
-		Human(Vector<2> starting_position, uint16_t starting_community)
+		Human(Vector<2> starting_position, uint16_t starting_community, SimulationSettings& simulation_settings) : settings(simulation_settings)
 		{
 			position = starting_position;
 			velocity.nullify();
@@ -44,9 +47,9 @@ class Human {
 
 			// Cap maximum velocity
 
-			if (velocity.length() > HUMAN_MAX_VELOCITY) {
+			if (velocity.length() > settings.HUMAN_MAX_VELOCITY) {
 				velocity.normalise();
-				velocity *= HUMAN_MAX_VELOCITY;
+				velocity *= settings.HUMAN_MAX_VELOCITY;
 			}
 
 			// Calculate new position
