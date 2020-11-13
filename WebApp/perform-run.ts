@@ -1,32 +1,21 @@
-interface RunSettings {
-	populationSize: string
-	numberOfCommunities: string
-	humanMaxVelocity: string
-	humanSpreadProbability: string
-	humanSpreadRange: string
-	humanInfectionDuration: string
-}
-
 const performRun = () => {
 	// Collect all settings
 
 	const get = (q: string) => document.querySelector<HTMLInputElement>(q).value
 
-	const settings: RunSettings = {
-		populationSize: get('#population-size'),
-		numberOfCommunities: get('#number-of-communities'),
-		humanMaxVelocity: get('#human-max-velocity'),
-		humanSpreadProbability: get('#human-spread-probability'),
-		humanSpreadRange: get('#human-spread-range'),
-		humanInfectionDuration: get('#human-infection-duration')
-	}
-
 	const req = new XMLHttpRequest()
 	req.open('POST', '/run')
+
+	req.setRequestHeader('population-size', get('#population-size'))
+	req.setRequestHeader('number-of-communities', get('#number-of-communities'))
+	req.setRequestHeader('human-max-velocity', get('#human-max-velocity'))
+	req.setRequestHeader('human-spread-probability', get('#human-spread-probability'))
+	req.setRequestHeader('human-spread-range', get('#human-spread-range'))
+	req.setRequestHeader('human-infection-duration', get('#human-infection-duration'))
 
 	req.addEventListener('readystatechange', () => {
 		console.log(req.response)
 	})
 
-	req.send(JSON.stringify(settings))
+	req.send()
 }
