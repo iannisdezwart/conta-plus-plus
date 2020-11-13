@@ -7,6 +7,7 @@
 
 const int COMMUNITY_SIZE = 400;
 
+#include "../libs/fs.hpp"
 #include "random.hpp"
 #include "human.hpp"
 #include "population.hpp"
@@ -14,15 +15,18 @@ const int COMMUNITY_SIZE = 400;
 
 using namespace std;
 
-void simulate(SimulationSettings& simulation_settings)
+void simulate(string output_file_path, SimulationSettings& simulation_settings)
 {
-	Population population("output/0.conta", simulation_settings);
+	fs::File file(output_file_path, "w");
+	Population population(file, simulation_settings);
 
-	for (int i = 0; i < 1000; i++) {
+	for (int i = 0; i < 999; i++) {
 		printf("Rendering frame %d...\n", i);
 
 		population.tick();
 	}
+
+	file.close();
 }
 
 #endif
