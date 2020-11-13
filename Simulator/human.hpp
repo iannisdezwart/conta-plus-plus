@@ -75,6 +75,11 @@ class Human {
 			}
 		}
 
+		bool susceptible()
+		{
+			return !(infected | recovered);
+		}
+
 		// Returns a FileBuffer that describes the Human in the CONTA file format
 
 		FileBuffer as_file_buffer()
