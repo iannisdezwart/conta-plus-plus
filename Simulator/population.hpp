@@ -3,6 +3,7 @@
 
 #include <bits/stdc++.h>
 
+#include "../libs/fs.hpp"
 #include "human.hpp"
 #include "filebuffer.hpp"
 #include "simulation_settings.hpp"
@@ -11,17 +12,16 @@ using namespace std;
 
 class Population {
 	public:
-		FILE *file;
+		fs::File& file;
 		SimulationSettings& settings;
 
 		int tick_count = 0;
 
 		vector<vector<Human>> communities;
 
-		Population(string output_file_name, SimulationSettings& simulation_settings) : settings(simulation_settings)
+		Population(fs::File& output_file, SimulationSettings& simulation_settings)
+			: settings(simulation_settings), file(output_file)
 		{
-			file = fopen(output_file_name.c_str(), "w");
-
 			// Create all community vectors
 
 			for (int i = 0; i < settings.NUMBER_OF_COMMUNITIES; i++) {
@@ -70,6 +70,11 @@ class Population {
 		{
 			tick_count++;
 
+			// We must first run the tick, then infect the newly infected Humans
+			// Otherwise, Humans could potentially reinfect each other
+
+			vector<Human *> new_infections;
+
 			// Loop over each community
 
 			for (int i = 0; i < settings.NUMBER_OF_COMMUNITIES; i++) {
@@ -101,9 +106,12 @@ class Population {
 								double distance = human->position.distance(other_human->position);
 
 								if (
-									distance <= settings.HUMAN_SPREAD_RANGE
+									other_human->susceptible()
+									&& distance <= settings.HUMAN_SPREAD_RANGE
 									&& random_float() < settings.HUMAN_SPREAD_PROBABILITY
-								) other_human->infected = true;
+								) {
+									new_infections.push_back(other_human);
+								}
 							}
 						}
 
@@ -115,6 +123,12 @@ class Population {
 						}
 					}
 				}
+			}
+
+			// Actually infect the new infected people
+
+			for (int i = 0; i < new_infections.size(); i++) {
+				new_infections[i]->infected = true;
 			}
 
 			write_tick_to_file();
@@ -129,7 +143,7 @@ class Population {
 			buffer.write(settings.NUMBER_OF_COMMUNITIES);
 			buffer.write('\n');
 
-			fwrite(buffer.data(), 1, buffer.size(), file);
+			file.write(buffer.data(), buffer.size());
 		}
 
 		void write_tick_to_file()
@@ -150,7 +164,7 @@ class Population {
 				}
 			}
 
-			fwrite(buffer.data(), 1, buffer.size(), file);
+			file.write(buffer.data(), buffer.size());
 		}
 };
 
