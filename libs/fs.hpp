@@ -1,7 +1,8 @@
 #ifndef FS_HEADER
-#define FS_HEADE
+#define FS_HEADER
 
 #include <bits/stdc++.h>
+#include "unistd.h"
 #include <dirent.h>
 #include <sys/stat.h>
 
@@ -13,6 +14,11 @@ namespace fs {
 		vector<string> file_names;
 
 		DIR *directory = opendir(path.c_str());
+
+		if (directory == NULL) {
+			throw strerror(errno);
+		}
+
 		struct dirent *directory_entry;
 
 		while (true) {
@@ -27,7 +33,12 @@ namespace fs {
 			}
 		}
 
-		closedir(directory);
+		int res = closedir(directory);
+
+		if (res == -1) {
+			throw strerror(errno);
+		}
+
 		return file_names;
 	}
 
@@ -40,14 +51,18 @@ namespace fs {
 
 	FileStats get_stats(string path)
 	{
-		struct stat buf;
-		stat(path.c_str(), &buf);
+		struct stat file_stats;
+		int res = stat(path.c_str(), &file_stats);
+
+		if (res != 0) {
+			throw strerror(errno);
+		}
 
 		FileStats stats = {
-			.size = buf.st_size,
-			.last_access_time = buf.st_atime,
-			.last_modification_time = buf.st_mtime,
-			.last_change_time = buf.st_ctime
+			.size = file_stats.st_size,
+			.last_access_time = file_stats.st_atime,
+			.last_modification_time = file_stats.st_mtime,
+			.last_change_time = file_stats.st_ctime
 		};
 
 		return stats;
@@ -75,7 +90,12 @@ namespace fs {
 
 			void seek(size_t new_offset)
 			{
-				fseek(file, new_offset, SEEK_SET);
+				int res = fseek(file, new_offset, SEEK_SET);
+
+				if (res != 0) {
+					throw strerror(errno);
+				}
+
 				offset = new_offset;
 			}
 
@@ -83,12 +103,22 @@ namespace fs {
 			{
 				// Go to the end of the file and get the size
 
-				fseek(file, 0, SEEK_END);
+				int res = fseek(file, 0, SEEK_END);
+
+				if (res != 0) {
+					throw strerror(errno);
+				}
+
 				size_t file_size = ftell(file);
 
 				// Go back to the previous offset
 
-				fseek(file, offset, SEEK_SET);
+				res = fseek(file, offset, SEEK_SET);
+
+				if (res != 0) {
+					throw strerror(errno);
+				}
+
 				return file_size;
 			}
 
@@ -104,7 +134,8 @@ namespace fs {
 
 			int close()
 			{
-				return fclose(file);
+				if (file != NULL) return fclose(file);
+				return -1;
 			}
 	};
 };
