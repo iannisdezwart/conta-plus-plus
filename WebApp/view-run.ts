@@ -87,7 +87,6 @@ const parseContaFile = (
 	while (fileBuffer.offset < fileBuffer.size()) {
 		contaFileFormat.ticks.push(Array(contaFileFormat.populationSize))
 		const humans = contaFileFormat.ticks[contaFileFormat.ticks.length - 1]
-		console.log(contaFileFormat, contaFileFormat.ticks.length - 1, fileBuffer.offset, fileBuffer.size())
 
 		for (let i = 0; i < contaFileFormat.populationSize; i++) {
 			const communityID = fileBuffer.readUint16()
