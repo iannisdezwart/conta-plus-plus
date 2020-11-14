@@ -15,17 +15,23 @@ const int COMMUNITY_SIZE = 400;
 
 using namespace std;
 
-void simulate(string output_file_path, SimulationSettings& simulation_settings)
+void simulate(
+	string output_file_path,
+	SimulationSettings& simulation_settings,
+	function<void (int, Population *)> tick_callback
+)
 {
 	fs::File file(output_file_path, "w");
-	Population population(file, simulation_settings);
+	Population *population = new Population(file, simulation_settings);
 
-	for (int i = 0; i < 999; i++) {
-		printf("Rendering frame %d...\n", i);
+	tick_callback(0, population);
 
-		population.tick();
+	for (int i = 1; i <= 1000; i++) {
+		population->tick();
+		tick_callback(i, population);
 	}
 
+	delete population;
 	file.close();
 }
 
