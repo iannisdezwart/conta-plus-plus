@@ -98,22 +98,29 @@ string random_hex_string()
 void run_simulator(const Request& req, Response& res)
 {
 	string run_id = random_hex_string();
+	// Todo: the header does not get sent, fix this
+	res.set_header("run-id", run_id + '\n');
 
-	string POPULATION_SIZE_HEADER = req.get_header_value("population-size");
-	string NUMBER_OF_COMMUNITIES_HEADER = req.get_header_value("number-of-communities");
-	string HUMAN_MAX_VELOCITY_HEADER = req.get_header_value("human-max-velocity");
+
+	// Collect the settings from the headers
+
+	string POPULATION_SIZE_H = req.get_header_value("population-size");
+	string NUMBER_OF_COMMUNITIES_H = req.get_header_value("number-of-communities");
+	string HUMAN_MAX_VELOCITY_H = req.get_header_value("human-max-velocity");
 	string HUMAN_SPREAD_PROBABILITY_HEADER = req.get_header_value("human-spread-probability");
-	string HUMAN_SPREAD_RANGE_HEADER = req.get_header_value("human-spread-range");
-	string HUMAN_INFECTION_DURATION_HEADER = req.get_header_value("human-infection-duration");
+	string HUMAN_SPREAD_RANGE_H = req.get_header_value("human-spread-range");
+	string HUMAN_INFECTION_DURATION_H = req.get_header_value("human-infection-duration");
 
-	int POPULATION_SIZE = atoi(POPULATION_SIZE_HEADER.c_str());
-  int NUMBER_OF_COMMUNITIES = atoi(NUMBER_OF_COMMUNITIES_HEADER.c_str());
-  double HUMAN_MAX_VELOCITY = atof(HUMAN_MAX_VELOCITY_HEADER.c_str());
+	// Convert the header values to the correct data types
+
+	int POPULATION_SIZE = atoi(POPULATION_SIZE_H.c_str());
+  int NUMBER_OF_COMMUNITIES = atoi(NUMBER_OF_COMMUNITIES_H.c_str());
+  double HUMAN_MAX_VELOCITY = atof(HUMAN_MAX_VELOCITY_H.c_str());
   double HUMAN_SPREAD_PROBABILITY = atof(HUMAN_SPREAD_PROBABILITY_HEADER.c_str());
-  int HUMAN_SPREAD_RANGE = atoi(HUMAN_SPREAD_RANGE_HEADER.c_str());
-  int HUMAN_INFECTION_DURATION = atoi(HUMAN_INFECTION_DURATION_HEADER.c_str());
+  int HUMAN_SPREAD_RANGE = atoi(HUMAN_SPREAD_RANGE_H.c_str());
+  int HUMAN_INFECTION_DURATION = atoi(HUMAN_INFECTION_DURATION_H.c_str());
 
-	SimulationSettings settings = {
+	SimulationSettings *settings = new SimulationSettings {
 		.POPULATION_SIZE = POPULATION_SIZE,
 		.NUMBER_OF_COMMUNITIES = NUMBER_OF_COMMUNITIES,
 		.HUMAN_MAX_VELOCITY = HUMAN_MAX_VELOCITY,
@@ -131,7 +138,29 @@ void run_simulator(const Request& req, Response& res)
 	printf("HUMAN_SPREAD_RANGE: %d\n", HUMAN_SPREAD_RANGE);
 	printf("HUMAN_INFECTION_DURATION: %d\n", HUMAN_INFECTION_DURATION);
 
-	simulate("Simulator/output/" + run_id + ".conta", settings);
+	res.set_chunked_content_provider(
+		"text/plain",
+		[settings, run_id](size_t offset, DataSink& sink) {
+			// Start the simulation
+
+			simulate(
+				"Simulator/output/" + run_id + ".conta",
+				*settings,
+				[&sink](int tick_number, Population *population) {
+					// Send the tick number
+
+					string tick = to_string(tick_number) + '\n';
+					sink.write(tick.c_str(), tick.size());
+
+					if (tick_number % 50 == 0) cout << tick;
+				}
+			);
+
+			sink.done();
+			return true;
+		},
+		[settings] { delete settings; }
+	);
 }
 
 void list_runs(const Request& req, Response& res)
@@ -173,15 +202,15 @@ string sanitise_hex_string(string input)
 	string output;
 
 	for (int i = 0; i < input.size(); i++) {
-		// Convert to uppercase
+		// Convert to lowercase
 
-		if (input[i] >= 'a' && input[i] <= 'z') {
-			input[i] -= 32;
+		if (input[i] >= 'A' && input[i] <= 'F') {
+			input[i] += 32;
 		}
 
 		// If the char is [0-9] or [A-F], add it to the output
 
-		if (input[i] >= '0' && input[i] <= '9' || input[i] >= 'A' && input[i] <= 'F') {
+		if (input[i] >= '0' && input[i] <= '9' || input[i] >= 'a' && input[i] <= 'f') {
 			output += input[i];
 		}
 	}
@@ -209,7 +238,7 @@ void get_run_output(const Request& req, Response& res)
 
 	res.set_chunked_content_provider(
 		"application/conta",
-		[=](size_t offset, DataSink& sink) {
+		[file, file_size](size_t offset, DataSink& sink) {
 			size_t bytes_written = 0;
 			char buffer[64 * 1024];
 
@@ -224,7 +253,7 @@ void get_run_output(const Request& req, Response& res)
 			sink.done();
 			return true;
 		},
-		[=]() {
+		[file]() {
 			file->close();
 			delete file;
 		}
