@@ -151,10 +151,8 @@ void run_simulator(const Request& req, Response& res)
 				[&sink](int tick_number, Population *population) {
 					// Send the tick number
 
-					string tick = to_string(tick_number) + '\n';
-					sink.write(tick.c_str(), tick.size());
-
-					if (tick_number % 50 == 0) cout << tick;
+					string output = "Rendered tick " + to_string(tick_number) + '\n';
+					sink.write(output.c_str(), output.size());
 				}
 			);
 
