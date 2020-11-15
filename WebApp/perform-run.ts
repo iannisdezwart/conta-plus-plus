@@ -13,24 +13,46 @@ const performRun = () => {
 	req.setRequestHeader('human-spread-range', get('#human-spread-range'))
 	req.setRequestHeader('human-infection-duration', get('#human-infection-duration'))
 
-	req.addEventListener('loadstart', () => {
-		// Todo: this header does not get received, fix this
+	const writeToConsole = (
+		text: string,
+		overwrite: boolean = false
+	) => {
+		const console = document.querySelector('#console')
 
-		console.log(req.getResponseHeader('run-id'))
-	})
+		// Write text
 
-	let receivedBytes = 0
+		if (overwrite) {
+			console.innerHTML = text
+		} else {
+			console.innerHTML += text
+		}
+
+		// Scroll to bottom
+
+		console.scrollTo(0, console.scrollHeight)
+	}
+
+	const printResponseToConsole = () => {
+		const output = (req.response as string).replace(/\n/g, '<br>')
+		writeToConsole(output, true)
+	}
 
 	req.addEventListener('readystatechange', () => {
-		const response = req.response as string
-		if (response.length == 0) return
+		if (req.readyState == 2) {
+			// Headers received, append the live run details to the page
 
-		console.log(response.substring(receivedBytes))
-		receivedBytes = response.length
-	})
+			document.querySelector<HTMLDivElement>('.live-run').style.display = 'block'
+			document.querySelector('#run-id').innerHTML = req.getResponseHeader('run-id')
+		} else if (req.readyState == 3) {
+			// Body is being sent
 
-	req.addEventListener('load', () => {
-		// console.log('Full response', req.response)
+			printResponseToConsole()
+		} else if (req.readyState == 4) {
+			// Body has been fully received
+
+			printResponseToConsole()
+			writeToConsole('<<< Run Finished!')
+		}
 	})
 
 	req.send()
