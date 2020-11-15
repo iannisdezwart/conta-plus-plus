@@ -78,22 +78,6 @@ a.button.light:hover {
 	font-weight: 700;
 }
 
-code {
-	background-color: #111;
-
-	display: block;
-
-	font-family: 'Ubuntu Mono', sans-serif;
-	font-size: 1em;
-
-	padding: 1em;
-	padding-right: 2em;
-	border-radius: 1em;
-
-	height: 300px;
-	overflow-y: auto;
-}
-
 .settings {
 	background-color: #333;
 
@@ -118,7 +102,7 @@ code {
 }
 
 input {
-	font-family: 'Ubuntu Mono', sans-serif;
+	font-family: 'Ubuntu Mono', monospace;
 	font-size: 1em;
 
 	background-color: #222;
@@ -142,6 +126,25 @@ input {
 	padding: 1em;
 	margin: 2em 0;
 	border-radius: 2em;
+}
+
+.console-container {
+	background-color: #111;
+
+	border-radius: 1em;
+	padding: .5em;
+}
+
+code {
+	display: block;
+
+	font-family: 'Ubuntu Mono', monospace;
+	font-size: 1em;
+
+	margin: .5em;
+
+	height: 300px;
+	overflow-y: auto;
 }
 
 .runs-container {
