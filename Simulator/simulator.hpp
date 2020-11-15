@@ -5,7 +5,7 @@
 
 // Globals
 
-const int COMMUNITY_SIZE = 400;
+const int COMMUNITY_SIZE = 512;
 
 #include "../libs/fs.hpp"
 #include "random.hpp"

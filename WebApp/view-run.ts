@@ -46,10 +46,11 @@ const getRunOutput = (
 // "\n"
 // `number_of_ticks` times:
 // `size` times:
-// [ uint16 COMMUNITY_ID ]
-// [ uint16 POSITION_X ]
-// [ uint16 POSITION_Y ]
-// [ uint8 FLAGS ] ( 0 0 0 0 0 0 RECOVERED INFECTED )
+// [ uint32 human ]
+	// [ uint6 COMMUNITY_ID ]
+	// [ uint9 POSITION_X ]
+	// [ uint9 POSITION_Y ]
+	// [ uint8 FLAGS ] ( 0 0 0 0 0 0 RECOVERED INFECTED )
 
 const parseContaFile = (
 	buffer: ArrayBuffer
@@ -89,11 +90,13 @@ const parseContaFile = (
 		const humans = contaFileFormat.ticks[contaFileFormat.ticks.length - 1]
 
 		for (let i = 0; i < contaFileFormat.populationSize; i++) {
-			const communityID = fileBuffer.readUint16()
-			const positionX = fileBuffer.readUint16()
-			const positionY = fileBuffer.readUint16()
+			const human = fileBuffer.readUint32()
 
-			const flags = fileBuffer.readUint8()
+			const communityID = (human & 0b11111100000000000000000000000000) >> 26
+			const positionX   = (human & 0b00000011111111100000000000000000) >> 17
+			const positionY   = (human & 0b00000000000000011111111100000000) >> 8
+			const flags       = (human & 0b00000000000000000000000111111111)
+
 			const infected = Boolean(flags & (1 << 0))
 			const recovered = Boolean(flags & (1 << 1))
 
@@ -184,8 +187,8 @@ addEventListener('load', async () => {
 
 		const canvas = document.createElement('canvas')
 		canvas.classList.add('community')
-		canvas.width = 400
-		canvas.height = 400
+		canvas.width = 512
+		canvas.height = 512
 
 		// Add canvas
 
