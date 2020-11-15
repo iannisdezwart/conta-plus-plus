@@ -5,6 +5,10 @@
 #include "Simulator/simulator.hpp"
 #include "Simulator/simulation_settings.hpp"
 
+// Change the below output directory path to your liking
+
+#define OUTPUT_DIRECTORY string("Simulator/output")
+
 using namespace std;
 using namespace httplib;
 
@@ -98,9 +102,7 @@ string random_hex_string()
 void run_simulator(const Request& req, Response& res)
 {
 	string run_id = random_hex_string();
-	// Todo: the header does not get sent, fix this
-	res.set_header("run-id", run_id + '\n');
-
+	res.set_header("run-id", run_id);
 
 	// Collect the settings from the headers
 
@@ -144,7 +146,7 @@ void run_simulator(const Request& req, Response& res)
 			// Start the simulation
 
 			simulate(
-				"Simulator/output/" + run_id + ".conta",
+				OUTPUT_DIRECTORY + "/" + run_id + ".conta",
 				*settings,
 				[&sink](int tick_number, Population *population) {
 					// Send the tick number
@@ -168,10 +170,10 @@ void list_runs(const Request& req, Response& res)
 	// Get all files
 
 	vector<pair<string, fs::FileStats>> files;
-	vector<string> file_names = fs::read_directory("Simulator/output");
+	vector<string> file_names = fs::read_directory(OUTPUT_DIRECTORY);
 
 	for (int i = 0; i < file_names.size(); i++) {
-		fs::FileStats stats = fs::get_stats("Simulator/output/" + file_names[i]);
+		fs::FileStats stats = fs::get_stats(OUTPUT_DIRECTORY + "/" + file_names[i]);
 		pair<string, fs::FileStats> entry(file_names[i], stats);
 		files.push_back(entry);
 	}
@@ -179,10 +181,13 @@ void list_runs(const Request& req, Response& res)
 	// Sort the files by last modification time
 
 	sort(files.begin(), files.end(), [](
-		pair<string, fs::FileStats> f1,
-		pair<string, fs::FileStats> f2
+		pair<string, fs::FileStats> top_file,
+		pair<string, fs::FileStats> bottom_file
 	) {
-		return f2.second.last_modification_time - f1.second.last_modification_time;
+		time_t top_file_time = top_file.second.last_modification_time;
+		time_t bottom_file_time = bottom_file.second.last_modification_time;
+
+		return top_file_time > bottom_file_time;
 	});
 
 	// Send the file names to the client
@@ -190,8 +195,8 @@ void list_runs(const Request& req, Response& res)
 	string output = "";
 
 	for (int i = 0; i < files.size(); i++) {
-		time_t timestamp = files[i].second.last_modification_time;
-		output += files[i].first + '\t' + to_string(timestamp) + '\n';
+		time_t modification_time = files[i].second.last_modification_time;
+		output += files[i].first + '\t' + to_string(modification_time) + '\n';
 	}
 
 	res.set_content(output, "text/plain");
@@ -221,7 +226,7 @@ string sanitise_hex_string(string input)
 void get_run_output(const Request& req, Response& res)
 {
 	string run_id = sanitise_hex_string(req.get_header_value("run-id"));
-	string file_path = "Simulator/output/" + run_id + ".conta";
+	string file_path = OUTPUT_DIRECTORY + "/" + run_id + ".conta";
 	fs::File *file = new fs::File(file_path, "r");
 
 	if (!file->exists()) {
