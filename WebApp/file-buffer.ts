@@ -67,10 +67,10 @@ class FileBuffer {
 	readInt16() {
 		const byte0 = this.readByte()
 		const byte1 = this.readByte()
-		const asUint16 = byte0 << 8 | byte1
+		const asInt16 = byte0 << 8 | byte1
 
-		if (asUint16 & (1 << 15)) return ~asUint16
-		return asUint16
+		if (asInt16 & (1 << 15)) return ~asInt16
+		return asInt16
 	}
 
 	readUint32() {
@@ -80,7 +80,9 @@ class FileBuffer {
 		const byte3 = this.readByte()
 		const asUint32 = byte0 << 24 | byte1 << 16 | byte2 << 8 | byte3
 
-		return asUint32
+		// We ought do this bloody examination, for JS is utter rubbish...
+
+		return (asUint32 < 0) ? asUint32 + 4294967296 : asUint32
 	}
 
 	readInt32() {
@@ -88,9 +90,10 @@ class FileBuffer {
 		const byte1 = this.readByte()
 		const byte2 = this.readByte()
 		const byte3 = this.readByte()
-		const asUint32 = byte0 << 24 | byte1 << 16 | byte2 << 8 | byte3
+		const asInt32 = byte0 << 24 | byte1 << 16 | byte2 << 8 | byte3
 
-		if (asUint32 & (1 << 31)) return ~asUint32
-		return asUint32
+		// What horror, JS auto-bloody-matically signs this integer!
+
+		return asInt32
 	}
 }

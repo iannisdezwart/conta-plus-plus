@@ -92,6 +92,9 @@ const parseContaFile = (
 		for (let i = 0; i < contaFileFormat.populationSize; i++) {
 			const human = fileBuffer.readUint32()
 
+			// Forgive me for the below formatting please...
+			// It's better than centre aligning my code ¯\_(ツ)_/¯
+
 			const communityID = (human & 0b11111100000000000000000000000000) >> 26
 			const positionX   = (human & 0b00000011111111100000000000000000) >> 17
 			const positionY   = (human & 0b00000000000000011111111100000000) >> 8
@@ -100,7 +103,11 @@ const parseContaFile = (
 			const infected = Boolean(flags & (1 << 0))
 			const recovered = Boolean(flags & (1 << 1))
 
-			humans[i] = { communityID, positionX, positionY, infected, recovered }
+			// JS, why are you doing this to me???
+
+			const actualCommunityID = (communityID < 0) ? communityID + 64 : communityID
+
+			humans[i] = { communityID: actualCommunityID, positionX, positionY, infected, recovered }
 		}
 	}
 
