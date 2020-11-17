@@ -12,6 +12,7 @@ struct SimulationSettings {
   double HUMAN_SPREAD_PROBABILITY;
   int HUMAN_SPREAD_RANGE;
   int HUMAN_INFECTION_DURATION;
+	double HUMAN_TRAVEL_RATIO;
 };
 
 #endif

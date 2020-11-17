@@ -12,6 +12,7 @@ const performRun = () => {
 	req.setRequestHeader('human-spread-probability', get('#human-spread-probability'))
 	req.setRequestHeader('human-spread-range', get('#human-spread-range'))
 	req.setRequestHeader('human-infection-duration', get('#human-infection-duration'))
+	req.setRequestHeader('human-travel-ratio', get('#human-travel-ratio'))
 
 	const writeToConsole = (
 		text: string,
