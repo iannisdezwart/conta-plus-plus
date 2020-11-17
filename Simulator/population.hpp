@@ -4,6 +4,7 @@
 #include <bits/stdc++.h>
 
 #include "../libs/fs.hpp"
+#include "random.hpp"
 #include "human.hpp"
 #include "filebuffer.hpp"
 #include "simulation_settings.hpp"
@@ -17,15 +18,21 @@ class Population {
 
 		int tick_count = 0;
 
-		vector<vector<Human>> communities;
+		vector<vector<Human *>> communities;
+
+		RandomIntGenerator travel_rng;
+		RandomIntGenerator community_rng;
 
 		Population(fs::File& output_file, SimulationSettings& simulation_settings)
-			: settings(simulation_settings), file(output_file)
+			: settings(simulation_settings),
+				file(output_file),
+				travel_rng(1, settings.POPULATION_SIZE - 1),
+				community_rng(0, settings.NUMBER_OF_COMMUNITIES - 1)
 		{
 			// Create all community vectors
 
 			for (int i = 0; i < settings.NUMBER_OF_COMMUNITIES; i++) {
-				vector<Human> humans_on_this_community;
+				vector<Human *> humans_on_this_community;
 				communities.push_back(humans_on_this_community);
 			}
 
@@ -43,13 +50,16 @@ class Population {
 
 				// Calculate a random community id
 
-				uint16_t starting_community = random_float() * settings.NUMBER_OF_COMMUNITIES;
-				Human human(starting_position, starting_community, settings);
+				uint8_t starting_community = community_rng.generate();
+
+				// Create the Human
+
+				Human *human = new Human(starting_position, starting_community, settings);
 
 				// Infect this Human if it its index matches
 
 				if (i == infected_human_index) {
-					human.infected = true;
+					human->infected = true;
 				}
 
 				// Add the human to the correct community
@@ -66,26 +76,63 @@ class Population {
 			write_tick_to_file();
 		}
 
+		~Population()
+		{
+			// Delete all humans
+
+			for (int i = 0; i < communities.size(); i++) {
+				for (int j = 0; j < communities[i].size(); j++) {
+					delete communities[i][j];
+				}
+			}
+		}
+
+		void move_human(uint8_t old_community_id, int index, uint8_t new_community_id)
+		{
+			Human *human = communities[old_community_id][index];
+
+			// Set human community id
+
+			human->community_id = new_community_id;
+
+			// Delete human from the old community
+
+			vector<Human *>& community = communities[old_community_id];
+			int community_size = community.size();
+
+			if (index != community_size - 1) {
+				// Swap the human with the last human in its community
+
+				community[index] = community[community_size - 1];
+			}
+
+			community.pop_back();
+
+			// Insert the human into the new community
+
+			communities[new_community_id].push_back(human);
+		}
+
 		void tick()
 		{
 			tick_count++;
 
 			// We must first run the tick, then infect the newly infected Humans
-			// Otherwise, Humans could potentially reinfect each other
+			// Otherwise, Humans could already infect others in their 0-th infection tick
 
 			vector<Human *> new_infections;
 
 			// Loop over each community
 
 			for (int i = 0; i < settings.NUMBER_OF_COMMUNITIES; i++) {
-				vector<Human> *humans = &communities[i];
+				vector<Human *>& humans = communities[i];
 
 				// Loop over each Human on the current community
 
-				for (int j = 0; j < humans->size(); j++) {
-					// Move the Human
+				for (int j = 0; j < humans.size(); j++) {
+					Human *human = humans[j];
 
-					Human *human = &humans->at(j);
+					// Move the Human
 
 					Vector<2> acceleration = Vector<2>::from_angle(random_float() * 2 * M_PI);
 					human->move(acceleration);
@@ -100,9 +147,9 @@ class Population {
 
 						// Todo: add incubation period here as well
 
-						for (int k = 0; k < humans->size(); k++) {
+						for (int k = 0; k < humans.size(); k++) {
 							if (j != k) {
-								Human *other_human = &humans->at(k);
+								Human *other_human = humans[k];
 								double distance = human->position.distance(other_human->position);
 
 								if (
@@ -121,6 +168,16 @@ class Population {
 							human->infected = false;
 							human->recovered = true;
 						}
+					}
+
+					// Travel
+
+					if (random_float() < settings.HUMAN_TRAVEL_RATIO) {
+						int offset = travel_rng.generate();
+						int new_community_id =
+							(human->community_id + offset) % settings.NUMBER_OF_COMMUNITIES;
+
+						move_human(human->community_id, j, new_community_id);
 					}
 				}
 			}
@@ -153,14 +210,14 @@ class Population {
 			// Loop over each community
 
 			for (int i = 0; i < settings.NUMBER_OF_COMMUNITIES; i++) {
-				vector<Human> *humans = &communities[i];
+				vector<Human *> humans = communities[i];
 
 				// Loop over each Human on the current community
 
-				for (int j = 0; j < humans->size(); j++) {
+				for (int j = 0; j < humans.size(); j++) {
 					// Write the current Human to the FileBuffer
 
-					buffer.write(humans->at(j).as_file_buffer());
+					buffer.write(humans[j]->as_file_buffer());
 				}
 			}
 
