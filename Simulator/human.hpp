@@ -26,7 +26,7 @@ class Human {
 
 		uint8_t community_id;
 
-		Human(Vector<2> starting_position, uint16_t starting_community, SimulationSettings& simulation_settings) : settings(simulation_settings)
+		Human(Vector<2> starting_position, uint8_t starting_community, SimulationSettings& simulation_settings) : settings(simulation_settings)
 		{
 			position = starting_position;
 			velocity.nullify();
