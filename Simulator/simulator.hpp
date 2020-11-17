@@ -18,20 +18,19 @@ using namespace std;
 void simulate(
 	string output_file_path,
 	SimulationSettings& simulation_settings,
-	function<void (int, Population *)> tick_callback
+	function<void (int, Population&)> tick_callback = NULL
 )
 {
 	fs::File file(output_file_path, "w");
-	Population *population = new Population(file, simulation_settings);
+	Population population(file, simulation_settings);
 
-	tick_callback(0, population);
+	if (tick_callback != NULL) tick_callback(0, population);
 
 	for (int i = 1; i <= 1000; i++) {
-		population->tick();
-		tick_callback(i, population);
+		population.tick();
+		if (tick_callback != NULL) tick_callback(i, population);
 	}
 
-	delete population;
 	file.close();
 }
 
