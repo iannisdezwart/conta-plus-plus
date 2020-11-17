@@ -87,7 +87,7 @@ string random_hex_string()
 {
 	char byte_chars[3];
 	string output;
-	RandomIntGenerator<0x00, 0xFF> random_int;
+	RandomIntGenerator random_int(0x00, 0xFF);
 
 	for (int i = 0; i < 4; i++) {
 		uint8_t random_byte = random_int.generate();
@@ -112,6 +112,7 @@ void run_simulator(const Request& req, Response& res)
 	string HUMAN_SPREAD_PROBABILITY_HEADER = req.get_header_value("human-spread-probability");
 	string HUMAN_SPREAD_RANGE_H = req.get_header_value("human-spread-range");
 	string HUMAN_INFECTION_DURATION_H = req.get_header_value("human-infection-duration");
+	string HUMAN_TRAVEL_RATIO_H = req.get_header_value("human-travel-ratio");
 
 	// Convert the header values to the correct data types
 
@@ -121,6 +122,7 @@ void run_simulator(const Request& req, Response& res)
   double HUMAN_SPREAD_PROBABILITY = atof(HUMAN_SPREAD_PROBABILITY_HEADER.c_str());
   int HUMAN_SPREAD_RANGE = atoi(HUMAN_SPREAD_RANGE_H.c_str());
   int HUMAN_INFECTION_DURATION = atoi(HUMAN_INFECTION_DURATION_H.c_str());
+	double HUMAN_TRAVEL_RATIO = atof(HUMAN_TRAVEL_RATIO_H.c_str());
 
 	SimulationSettings *settings = new SimulationSettings {
 		.POPULATION_SIZE = POPULATION_SIZE,
@@ -129,6 +131,7 @@ void run_simulator(const Request& req, Response& res)
 		.HUMAN_SPREAD_PROBABILITY = HUMAN_SPREAD_PROBABILITY,
 		.HUMAN_SPREAD_RANGE = HUMAN_SPREAD_RANGE,
 		.HUMAN_INFECTION_DURATION = HUMAN_INFECTION_DURATION,
+		.HUMAN_TRAVEL_RATIO = HUMAN_TRAVEL_RATIO
 	};
 
 	printf("Running a simulation with these settings:\n");
@@ -139,6 +142,7 @@ void run_simulator(const Request& req, Response& res)
 	printf("HUMAN_SPREAD_PROBABILITY: %f\n", HUMAN_SPREAD_PROBABILITY);
 	printf("HUMAN_SPREAD_RANGE: %d\n", HUMAN_SPREAD_RANGE);
 	printf("HUMAN_INFECTION_DURATION: %d\n", HUMAN_INFECTION_DURATION);
+	printf("HUMAN_TRAVEL_RATIO: %f\n", HUMAN_TRAVEL_RATIO);
 
 	res.set_chunked_content_provider(
 		"text/plain",
@@ -148,7 +152,7 @@ void run_simulator(const Request& req, Response& res)
 			simulate(
 				OUTPUT_DIRECTORY + "/" + run_id + ".conta",
 				*settings,
-				[&sink](int tick_number, Population *population) {
+				[&sink](int tick_number, Population& population) {
 					// Send the tick number
 
 					string output = "Rendered tick " + to_string(tick_number) + '\n';
