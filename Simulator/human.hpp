@@ -35,6 +35,19 @@ class Human {
 			community_id = starting_community;
 		}
 
+		void operator=(const Human& human)
+		{
+			position = human.position;
+			velocity = human.velocity;
+			acceleration = human.acceleration;
+
+			infected = human.infected;
+			ticks_infected = human.ticks_infected;
+			recovered = human.recovered;
+
+			community_id = human.community_id;
+		}
+
 		void move(Vector<2> new_acceleration)
 		{
 			// Generate random acceleration
