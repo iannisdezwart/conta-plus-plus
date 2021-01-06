@@ -1,5 +1,5 @@
 server: server.o
-	g++ -O2 server.o -o server -pthread
+	g++ -O3 server.o -o server -pthread
 	mkdir -p Simulator/output
 	echo "Successfully compiled the program. Now execute it with './server'"
 
