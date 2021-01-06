@@ -1,7 +1,11 @@
 #include <bits/stdc++.h>
 
 #include "../libs/fs.hpp"
+
+#define MULTI_THREADED
+
 #include "simulator.hpp"
+#include "random.hpp"
 
 using namespace std;
 
@@ -13,8 +17,12 @@ int main()
 		.HUMAN_MAX_VELOCITY = 5.0,
 		.HUMAN_SPREAD_PROBABILITY = 0.5,
 		.HUMAN_SPREAD_RANGE = 20,
-		.HUMAN_INFECTION_DURATION = 100
+		.HUMAN_INFECTION_DURATION = 100,
+		.HUMAN_TRAVEL_RATIO = 0.01,
 	};
 
-	simulate("output/123.conta", simulation_settings);
+	simulate("output/123.conta", simulation_settings,
+		[](int tick_number, Population& population) {
+			printf("Rendered tick %d\n", tick_number);
+		});
 }

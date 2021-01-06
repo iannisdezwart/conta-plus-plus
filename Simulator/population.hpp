@@ -109,6 +109,8 @@ class Population {
 					}
 				});
 			}
+
+			thread_pool.join();
 		}
 
 		#else
@@ -223,19 +225,19 @@ class Population {
 						}
 					}
 				});
-
-				loop_over_community(i, [&](Human *human, int j) {
-					// Travel
-
-					if (random_float() < settings.HUMAN_TRAVEL_RATIO) {
-						int offset = travel_rng.generate();
-						int new_community_id =
-							(human->community_id + offset) % settings.NUMBER_OF_COMMUNITIES;
-
-						move_human(human->community_id, j, new_community_id);
-					}
-				});
 			}
+
+		// Consider traveling for each Human
+
+		for (int i = 0; i < settings.NUMBER_OF_COMMUNITIES; i++) {
+			loop_over_community(i, [&](Human *human, int j) {
+				if (random_float() < settings.HUMAN_TRAVEL_RATIO) {
+					int offset = travel_rng.generate();
+					int new_com_id = (i + offset) % settings.NUMBER_OF_COMMUNITIES;
+					move_human(i, j, new_com_id);
+				}
+			});
+		}
 
 			write_tick_to_file();
 		}
