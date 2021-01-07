@@ -37,7 +37,7 @@ const formatDateTime = (
 	// Don't look at this monster please
 	// All it does is return "YYYY-MM-DD hh:mm:ss"
 
-	return `${ date.getFullYear() }-${ date.getMonth().toString().padStart(2, '0') }-${ (date.getDate() + 1).toString().padStart(2, '0') } ${ date.getHours().toString().padStart(2, '0') }:${ date.getMinutes().toString().padStart(2, '0') }:${ date.getSeconds().toString().padStart(2, '0') }`
+	return `${ date.getFullYear() }-${ (date.getMonth() + 1).toString().padStart(2, '0') }-${ date.getDate().toString().padStart(2, '0') } ${ date.getHours().toString().padStart(2, '0') }:${ date.getMinutes().toString().padStart(2, '0') }:${ date.getSeconds().toString().padStart(2, '0') }`
 }
 
 addEventListener('load', async () => {
