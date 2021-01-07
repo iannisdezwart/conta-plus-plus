@@ -175,9 +175,31 @@ code {
 	padding: 1em;
 }
 
+.two-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+}
+
+#graph {
+	margin: 0 2em;
+	border-radius: 2em;
+	overflow: hidden;
+}
+
+@media (max-width: 1400px) {
+	.two-grid {
+		grid-template-columns: 1fr;
+	}
+
+	#graph {
+		margin: 2em 0;
+	}
+}
+
 .communities {
 	display: flex;
 	flex-wrap: wrap;
+	justify-content: center;
 
 	max-height: 70vh;
 	overflow-y: auto;
