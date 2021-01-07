@@ -125,6 +125,13 @@ const renderTick = (
 
 	// Draw all humans
 
+	const graphData: GraphData = {
+		tick: tickNumber,
+		infected: 0,
+		recovered: 0,
+		susceptible: 0
+	}
+
 	for (let i = 0; i < data.populationSize; i++) {
 		const {
 			communityID,
@@ -133,6 +140,11 @@ const renderTick = (
 			infected,
 			recovered
 		} = data.ticks[tickNumber][i]
+
+		if (infected) graphData.infected++
+		else if (!recovered) graphData.susceptible++
+
+		if (recovered) graphData.recovered++
 
 		const ctx = ctxes[communityID]
 
@@ -147,6 +159,10 @@ const renderTick = (
 
 	const progressBar = document.querySelector<HTMLSpanElement>('.progress')
 	progressBar.style.width = (tickNumber / data.ticks.length * 100).toString() + '%'
+
+	// Update graph
+
+	updateGraph(graphData)
 }
 
 const startAnimation = () => {
@@ -180,6 +196,10 @@ addEventListener('load', async () => {
 	const searchParams = new URLSearchParams(location.search)
 	const output = await getRunOutput(searchParams.get('id'))
 	data = parseContaFile(output)
+
+	// Create graph
+
+	createGraph()
 
 	// Create communities
 

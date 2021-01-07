@@ -5,8 +5,10 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<link rel="stylesheet" href="/style">
 		<link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:wght@400;700&family=Ubuntu:wght@300;400;700&display=swap" rel="stylesheet">
+		<script src="/plotly" charset="utf-8"></script>
 		<script src="/file-buffer" charset="utf-8"></script>
 		<script src="/view-run-script" charset="utf-8"></script>
+		<script src="/view-run-graph" charset="utf-8"></script>
 		<title>View Run | Conta++ WebApp</title>
 	</head>
 	<body>
@@ -14,10 +16,16 @@
 			<h1>Conta++ WebApp</h1>
 			<h3><a href="/">Home</a> > <a href="/list-runs">Run List</a> > View Run</h3>
 
-			<div class="communities">
-				<p>Loading...</p>
+			<div class="two-grid">
+				<div id="graph">
+					<!-- The plotly.js graph will be dynamically generated here -->
+				</div>
 
-				<!-- The community canvasses will be dynamically generated here -->
+				<div class="communities">
+					<p>Loading...</p>
+
+					<!-- The community canvasses will be dynamically generated here -->
+				</div>
 			</div>
 
 			<div class="controls">
