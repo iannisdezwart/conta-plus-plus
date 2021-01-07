@@ -97,20 +97,48 @@ class Population {
 		void loop_over_community(int com_i, function<void (Human *, int)> callback)
 		{
 			Population *pop = this;
+			atomic<int> finished_threads;
+			finished_threads = 0;
 
 			for (int thr_i = 0; thr_i < NUM_OF_THREADS; thr_i++) {
-				boost::asio::post(thread_pool, [com_i, thr_i, pop, callback]() {
-					int i = thr_i;
-					int com_size = pop->communities[com_i].size();
+				boost::asio::post(thread_pool,
+					[com_i, thr_i, pop, callback, &finished_threads]() {
+						int i = thr_i;
+						int com_size = pop->communities[com_i].size();
 
-					while (i < com_size) {
-						callback(pop->communities[com_i][i], i);
-						i += NUM_OF_THREADS;
-					}
+						while (i < com_size) {
+							callback(pop->communities[com_i][i], i);
+							i += NUM_OF_THREADS;
+						}
+
+						finished_threads++;
 				});
 			}
 
-			thread_pool.join();
+			while (finished_threads != NUM_OF_THREADS) {
+				this_thread::sleep_for(chrono::nanoseconds(1000));
+			}
+		}
+
+		void loop_over_population(function<void (Human *, int, int)> callback)
+		{
+			Population *pop = this;
+			atomic<int> fin;
+			fin = 0;
+
+			for (int com_i = 0; com_i < settings.NUMBER_OF_COMMUNITIES; com_i++) {
+				boost::asio::post(thread_pool, [com_i, pop, &callback, &fin]() {
+					for (int i = 0; i < pop->communities[com_i].size(); i++) {
+						callback(pop->communities[com_i][i], com_i, i);
+					}
+
+					fin++;
+				});
+			}
+
+			while (fin != settings.NUMBER_OF_COMMUNITIES) {
+				this_thread::sleep_for(chrono::nanoseconds(1000));
+			}
 		}
 
 		#else
@@ -122,14 +150,16 @@ class Population {
 			}
 		}
 
-		#endif
-
-		void loop_over_population(function<void (Human *, int)> callback)
+		void loop_over_population(function<void (Human *, int, int)> callback)
 		{
-			for (int i = 0; i < settings.NUMBER_OF_COMMUNITIES; i++) {
-				loop_over_community(i, callback);
+			for (int com_i = 0; com_i < settings.NUMBER_OF_COMMUNITIES; com_i++) {
+				for (int i = 0; i < communities[com_i].size(); i++) {
+					callback(communities[com_i][i], com_i, i);
+				}
 			}
 		}
+
+		#endif
 
 		~Population()
 		{
@@ -143,9 +173,13 @@ class Population {
 
 			// Delete the allocated Humans
 
-			loop_over_population([](Human *human, int com_i) {
-				delete human;
-			});
+			printf("Deleting population...\n");
+
+			for (int com_i = 0; com_i < settings.NUMBER_OF_COMMUNITIES; com_i++) {
+				for (int i = 0; i < communities[com_i].size(); i++) {
+					delete communities[com_i][i];
+				}
+			}
 		}
 
 		void move_human(uint8_t old_community_id, int index, uint8_t new_community_id)
@@ -178,66 +212,61 @@ class Population {
 		{
 			tick_count++;
 
-			// Loop over each community
+			// Loop over each human in the population
 
-			for (int i = 0; i < settings.NUMBER_OF_COMMUNITIES; i++) {
-				vector<Human *>& humans = communities[i];
+			loop_over_population([&](Human *human, int com_i, int i) {
+				// Move the Human
 
-				// Loop over each Human on the current community
+				human->move();
 
-				loop_over_community(i, [&](Human *human, int j) {
-					// Move the Human
+				// Infect other Humans if this Human is infected
 
-					human->move();
+				if (human->infected) {
+					vector<Human *>& humans = communities[com_i];
+					human->ticks_infected++;
 
-					// Infect other Humans if this Human is infected
+					// Infect each other Human that is within the HUMAN_SPREAD_RANGE,
+					// with a probability of HUMAN_SPREAD_PROBABILITY
 
-					if (human->infected) {
-						human->ticks_infected++;
+					// Todo: add incubation period here as well
 
-						// Infect each other Human that is within the HUMAN_SPREAD_RANGE,
-						// with a probability of HUMAN_SPREAD_PROBABILITY
+					for (int k = 0; k < humans.size(); k++) {
+						if (i != k) {
+							Human *other_human = humans[k];
 
-						// Todo: add incubation period here as well
+							if (!other_human->susceptible()) continue;
 
-						for (int k = 0; k < humans.size(); k++) {
-							if (j != k) {
-								Human *other_human = humans[k];
+							double distance = human->position.distance(other_human->position);
 
-								if (!other_human->susceptible()) continue;
-
-								double distance = human->position.distance(other_human->position);
-
-								if (
-									distance <= settings.HUMAN_SPREAD_RANGE
-									&& random_float() < settings.HUMAN_SPREAD_PROBABILITY
-								) {
-									other_human->infected = true;
-								}
+							if (
+								distance <= settings.HUMAN_SPREAD_RANGE
+								&& random_float() < settings.HUMAN_SPREAD_PROBABILITY
+							) {
+								other_human->infected = true;
 							}
 						}
-
-						// Recover after HUMAN_INFECTION_DURATION ticks
-
-						if (human->ticks_infected >= settings.HUMAN_INFECTION_DURATION) {
-							human->infected = false;
-							human->recovered = true;
-						}
 					}
-				});
-			}
 
-		// Consider traveling for each Human
+					// Recover after HUMAN_INFECTION_DURATION ticks
 
-		for (int i = 0; i < settings.NUMBER_OF_COMMUNITIES; i++) {
-			loop_over_community(i, [&](Human *human, int j) {
-				if (random_float() < settings.HUMAN_TRAVEL_RATIO) {
-					int offset = travel_rng.generate();
-					int new_com_id = (i + offset) % settings.NUMBER_OF_COMMUNITIES;
-					move_human(i, j, new_com_id);
+					if (human->ticks_infected >= settings.HUMAN_INFECTION_DURATION) {
+						human->infected = false;
+						human->recovered = true;
+					}
 				}
 			});
-		}
+
+			// Consider traveling for each Human
+
+			for (int com_i = 0; com_i < settings.NUMBER_OF_COMMUNITIES; com_i++) {
+				for (int i = 0; i < communities[com_i].size(); i++) {
+					if (random_float() < settings.HUMAN_TRAVEL_RATIO) {
+						int offset = travel_rng.generate();
+						int new_com_id = (com_i + offset) % settings.NUMBER_OF_COMMUNITIES;
+						move_human(com_i, i, new_com_id);
+					}
+				}
+			}
 
 			write_tick_to_file();
 		}
