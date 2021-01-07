@@ -38,12 +38,15 @@ const performRun = () => {
 		writeToConsole(output, true)
 	}
 
+	let id: string
+
 	req.addEventListener('readystatechange', () => {
 		if (req.readyState == 2) {
 			// Headers received, append the live run details to the page
 
 			document.querySelector<HTMLDivElement>('.live-run').style.display = 'block'
-			document.querySelector('#run-id').innerHTML = req.getResponseHeader('run-id')
+			id = req.getResponseHeader('run-id')
+			document.querySelector('#run-id').innerHTML = id
 		} else if (req.readyState == 3) {
 			// Body is being sent
 
@@ -53,6 +56,9 @@ const performRun = () => {
 
 			printResponseToConsole()
 			writeToConsole('<<< Run Finished!')
+			document.querySelector<HTMLDivElement>('#show-run-container').innerHTML = /* html */ `
+			<a href="/view-run?id=${ id }" class="button">Show run</a>
+			`
 		}
 	})
 
