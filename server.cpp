@@ -2,6 +2,10 @@
 #include "libs/cpp-httplib.hpp"
 #include "libs/fs.hpp"
 
+// Run simulations in multi threaded mode
+
+// #define MULTI_THREADED
+
 #include "Simulator/simulator.hpp"
 #include "Simulator/simulation_settings.hpp"
 
@@ -20,37 +24,40 @@ struct FileEntry {
 unordered_map<string, FileEntry> files = {
 	{ "/", { .name = "index.html", .mime_type = "text/html" } },
 	{ "/style", { .name = "style.css", .mime_type = "text/css" } },
+	{ "/plotly", { .name = "plotly.js", .mime_type = "text/javascript" } },
 	{ "/file-buffer", { .name = "file-buffer.js", .mime_type = "text/javascript" } },
 	{ "/list-runs", { .name = "list-runs.html", .mime_type = "text/html" } },
 	{ "/list-runs-script", { .name = "list-runs.js", .mime_type = "text/javascript" } },
 	{ "/perform-run", { .name = "perform-run.html", .mime_type = "text/html" } },
 	{ "/perform-run-script", { .name = "perform-run.js", .mime_type = "text/javascript" } },
 	{ "/view-run", { .name = "view-run.html", .mime_type = "text/html" } },
-	{ "/view-run-script", { .name = "view-run.js", .mime_type = "text/javascript" } }
+	{ "/view-run-script", { .name = "view-run.js", .mime_type = "text/javascript" } },
+	{ "/view-run-graph", { .name = "view-run-graph.js", .mime_type = "text/javascript" } }
 };
 
 void stream_file(string file_path, string mime_type, Response& res)
 {
-	fs::File file(file_path, "r");
-	char buffer[64 * 1024];
-
-	res.set_content_provider(
-		file.size(),
+	res.set_chunked_content_provider(
 		mime_type.c_str(),
-		[&file, &buffer](size_t offset, size_t length, DataSink& sink) {
-			// Put the next 64kB (or remaining bytes) into the buffer
+		[file_path](size_t offset, DataSink& sink) {
+			fs::File file(file_path, "r");
 
-			int bytes_to_stream = min((uint64_t) 64 * 1024, length);
-			file.read(buffer, bytes_to_stream);
+			size_t remaining_bytes = file.size();
+			char buffer[64 * 1024];
 
-			// Write the buffer to the sink
+			while (remaining_bytes != 0) {
+				// Put the next 64kB (or remaining bytes) into the buffer
 
-			sink.write(buffer, bytes_to_stream);
+				size_t bytes_to_stream = min((size_t) 64 * 1024, remaining_bytes);
+				remaining_bytes -= bytes_to_stream;
 
-			return true;
-		},
-		[&file]() {
+				file.read(buffer, bytes_to_stream);
+				sink.write(buffer, bytes_to_stream);
+			}
+
+			sink.done();
 			file.close();
+			return true;
 		}
 	);
 }
@@ -147,6 +154,8 @@ void run_simulator(const Request& req, Response& res)
 	res.set_chunked_content_provider(
 		"text/plain",
 		[settings, run_id](size_t offset, DataSink& sink) {
+			auto start = chrono::high_resolution_clock::now();
+
 			// Start the simulation
 
 			simulate(
@@ -159,6 +168,13 @@ void run_simulator(const Request& req, Response& res)
 					sink.write(output.c_str(), output.size());
 				}
 			);
+
+			auto end = chrono::high_resolution_clock::now();
+			int duration = chrono::duration_cast<chrono::milliseconds>(
+				end - start).count();
+
+			string output = "Elapsed time " + to_string(duration) + "ms\n";
+			sink.write(output.c_str(), output.size());
 
 			sink.done();
 			return true;
