@@ -25,9 +25,11 @@ class Population {
 		fs::File& file;
 		SimulationSettings& settings;
 
-		int tick_count = 0;
-
 		vector<vector<Human *>> communities;
+		int tick_count = 0;
+		bool social_distancing = false;
+
+		int infected_count = 0;
 
 		RandomIntGenerator travel_rng;
 		RandomIntGenerator community_rng;
@@ -76,6 +78,7 @@ class Population {
 
 				if (i == infected_human_index) {
 					human->infected = true;
+					infected_count++;
 				}
 
 				// Add the human to the correct community
@@ -212,12 +215,40 @@ class Population {
 		{
 			tick_count++;
 
+			// Enable social distancing if the infected count reaches the threshold
+
+			if (infected_count >= settings.SOCIAL_DISTANCING_THRESHOLD)
+				social_distancing = true;
+
+			// Disable social distancing if the infected count reaches the release
+
+			if (social_distancing
+				&& infected_count < settings.SOCIAL_DISTANCING_RELEASE)
+					social_distancing = false;
+
 			// Loop over each human in the population
 
 			loop_over_population([&](Human *human, int com_i, int i) {
 				// Move the Human
 
-				human->move();
+				Vector<2> acc = Vector<2>::from_angle(random_float() * 2 * M_PI);
+
+				if (social_distancing) {
+					// Keep distance from other Humans
+
+					for (int j = 0; j < communities[com_i].size(); j++) {
+						if (i != j) {
+							Vector<2>& pos = human->position;
+							Vector<2>& other_pos = communities[com_i][j]->position;
+
+							if (pos.distance(other_pos) < settings.SOCIAL_DISTANCING_RADIUS) {
+								acc += pos - other_pos;
+							}
+						}
+					}
+				}
+
+				human->move(acc);
 
 				// Infect other Humans if this Human is infected
 
@@ -243,6 +274,7 @@ class Population {
 								&& random_float() < settings.HUMAN_SPREAD_PROBABILITY
 							) {
 								other_human->infected = true;
+								infected_count++;
 							}
 						}
 					}
@@ -251,6 +283,7 @@ class Population {
 
 					if (human->ticks_infected >= settings.HUMAN_INFECTION_DURATION) {
 						human->infected = false;
+						infected_count--;
 						human->recovered = true;
 					}
 				}

@@ -116,20 +116,26 @@ void run_simulator(const Request& req, Response& res)
 	string POPULATION_SIZE_H = req.get_header_value("population-size");
 	string NUMBER_OF_COMMUNITIES_H = req.get_header_value("number-of-communities");
 	string HUMAN_MAX_VELOCITY_H = req.get_header_value("human-max-velocity");
-	string HUMAN_SPREAD_PROBABILITY_HEADER = req.get_header_value("human-spread-probability");
+	string HUMAN_SPREAD_PROBABILITY_H = req.get_header_value("human-spread-probability");
 	string HUMAN_SPREAD_RANGE_H = req.get_header_value("human-spread-range");
 	string HUMAN_INFECTION_DURATION_H = req.get_header_value("human-infection-duration");
 	string HUMAN_TRAVEL_RATIO_H = req.get_header_value("human-travel-ratio");
+	string SOCIAL_DISTANCING_THRESHOLD_H = req.get_header_value("social-distancing-threshold");
+	string SOCIAL_DISTANCING_RELEASE_H = req.get_header_value("social-distancing-release");
+	string SOCIAL_DISTANCING_RADIUS_H = req.get_header_value("social-distancing-ratio");
 
 	// Convert the header values to the correct data types
 
 	int POPULATION_SIZE = atoi(POPULATION_SIZE_H.c_str());
   int NUMBER_OF_COMMUNITIES = atoi(NUMBER_OF_COMMUNITIES_H.c_str());
   double HUMAN_MAX_VELOCITY = atof(HUMAN_MAX_VELOCITY_H.c_str());
-  double HUMAN_SPREAD_PROBABILITY = atof(HUMAN_SPREAD_PROBABILITY_HEADER.c_str());
+  double HUMAN_SPREAD_PROBABILITY = atof(HUMAN_SPREAD_PROBABILITY_H.c_str());
   int HUMAN_SPREAD_RANGE = atoi(HUMAN_SPREAD_RANGE_H.c_str());
   int HUMAN_INFECTION_DURATION = atoi(HUMAN_INFECTION_DURATION_H.c_str());
 	double HUMAN_TRAVEL_RATIO = atof(HUMAN_TRAVEL_RATIO_H.c_str());
+	int SOCIAL_DISTANCING_THRESHOLD = atoi(SOCIAL_DISTANCING_THRESHOLD_H.c_str());
+	int SOCIAL_DISTANCING_RELEASE = atoi(SOCIAL_DISTANCING_RELEASE_H.c_str());
+	int SOCIAL_DISTANCING_RADIUS = atoi(SOCIAL_DISTANCING_RADIUS_H.c_str());
 
 	SimulationSettings *settings = new SimulationSettings {
 		.POPULATION_SIZE = POPULATION_SIZE,
@@ -138,7 +144,10 @@ void run_simulator(const Request& req, Response& res)
 		.HUMAN_SPREAD_PROBABILITY = HUMAN_SPREAD_PROBABILITY,
 		.HUMAN_SPREAD_RANGE = HUMAN_SPREAD_RANGE,
 		.HUMAN_INFECTION_DURATION = HUMAN_INFECTION_DURATION,
-		.HUMAN_TRAVEL_RATIO = HUMAN_TRAVEL_RATIO
+		.HUMAN_TRAVEL_RATIO = HUMAN_TRAVEL_RATIO,
+		.SOCIAL_DISTANCING_THRESHOLD = SOCIAL_DISTANCING_THRESHOLD,
+		.SOCIAL_DISTANCING_RELEASE = SOCIAL_DISTANCING_RELEASE,
+		.SOCIAL_DISTANCING_RADIUS = SOCIAL_DISTANCING_RADIUS
 	};
 
 	printf("Running a simulation with these settings:\n");
@@ -150,6 +159,9 @@ void run_simulator(const Request& req, Response& res)
 	printf("HUMAN_SPREAD_RANGE: %d\n", HUMAN_SPREAD_RANGE);
 	printf("HUMAN_INFECTION_DURATION: %d\n", HUMAN_INFECTION_DURATION);
 	printf("HUMAN_TRAVEL_RATIO: %f\n", HUMAN_TRAVEL_RATIO);
+	printf("SOCIAL_DISTANCING_THRESHOLD: %d\n", SOCIAL_DISTANCING_THRESHOLD);
+	printf("SOCIAL_DISTANCING_RELEASE: %d\n", SOCIAL_DISTANCING_RELEASE);
+	printf("SOCIAL_DISTANCING_RADIUS: %d\n", SOCIAL_DISTANCING_RADIUS);
 
 	res.set_chunked_content_provider(
 		"text/plain",
