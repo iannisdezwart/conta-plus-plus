@@ -101,23 +101,23 @@ class Human {
 
 			// Format:
 			// [ uint32 HUMAN ]:
-				// [ uint6 COMMUNITY_ID ]
+				// [ uint8 COMMUNITY_ID ]
 				// [ uint9 POSITION_X ]
 				// [ uint9 POSITION_Y ]
-				// [ uint8 FLAGS ] ( 0 0 0 0 0 0 RECOVERED INFECTED )
+				// [ uint6 FLAGS ] ( 0 0 0 0 0 0 RECOVERED INFECTED )
 
 			uint32_t human = 0;
 
-			// Write the community ID to bytes [ 32 - 27 ]
+			// Write the community ID to bytes [ 32 - 25 ]
 
-			human |= community_id << 26;
+			human |= community_id << 24;
 
-			// Write the X and Y positions to bytes [ 26 - 17 ] and [ 16 - 8 ]
+			// Write the X and Y positions to bytes [ 23 - 15 ] and [ 14 - 6 ]
 
-			human |= ((uint16_t) position[0] << 17);
-			human |= ((uint16_t) position[1] << 8);
+			human |= ((uint16_t) position[0] << 15);
+			human |= ((uint16_t) position[1] << 6);
 
-			// Write the flags to bytes [ 7 - 0 ]
+			// Write the flags to bytes [ 5 - 0 ]
 
 			uint8_t flags = (recovered << 1) | (infected << 0);
 			human |= flags;

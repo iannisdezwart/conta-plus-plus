@@ -47,10 +47,10 @@ const getRunOutput = (
 // `number_of_ticks` times:
 // `size` times:
 // [ uint32 human ]
-	// [ uint6 COMMUNITY_ID ]
+	// [ uint8 COMMUNITY_ID ]
 	// [ uint9 POSITION_X ]
 	// [ uint9 POSITION_Y ]
-	// [ uint8 FLAGS ] ( 0 0 0 0 0 0 RECOVERED INFECTED )
+	// [ uint6 FLAGS ] ( 0 0 0 0 RECOVERED INFECTED )
 
 const parseContaFile = (
 	buffer: ArrayBuffer
@@ -95,10 +95,10 @@ const parseContaFile = (
 			// Forgive me for the below formatting please...
 			// It's better than centre aligning my code ¯\_(ツ)_/¯
 
-			const communityID = (human & 0b11111100000000000000000000000000) >> 26
-			const positionX   = (human & 0b00000011111111100000000000000000) >> 17
-			const positionY   = (human & 0b00000000000000011111111100000000) >> 8
-			const flags       = (human & 0b00000000000000000000000111111111)
+			const communityID = (human & 0b11111111000000000000000000000000) >> 24
+			const positionX   = (human & 0b00000000111111111000000000000000) >> 15
+			const positionY   = (human & 0b00000000000000000111111111000000) >> 6
+			const flags       = (human & 0b00000000000000000000000000111111)
 
 			const infected = Boolean(flags & (1 << 0))
 			const recovered = Boolean(flags & (1 << 1))
