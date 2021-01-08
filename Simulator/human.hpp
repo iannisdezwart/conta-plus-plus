@@ -48,11 +48,11 @@ class Human {
 			community_id = human.community_id;
 		}
 
-		void move()
+		void move(Vector<2>& new_acceleration)
 		{
 			// Generate random acceleration
 
-			acceleration = Vector<2>::from_angle(random_float() * 2 * M_PI);
+			acceleration = new_acceleration;
 
 			// Calculate velocity
 
