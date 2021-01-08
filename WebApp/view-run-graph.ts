@@ -122,6 +122,15 @@ const createGraph = () => {
 		responsive: true
 	}
 
+	infectedData.x = []
+	infectedData.y = []
+
+	susceptibleData.x = []
+	susceptibleData.y = []
+
+	recoveredData.x = []
+	recoveredData.y = []
+
 	Plotly.newPlot('graph', [
 		// cumulativeInfectionsData,
 		infectedData,

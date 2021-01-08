@@ -170,6 +170,10 @@ const startAnimation = () => {
 
 	clearInterval(animationIntervalID)
 
+	// Reset the graph
+
+	createGraph()
+
 	let i = 0
 	const renderNextTick = () => renderTick(i++)
 
