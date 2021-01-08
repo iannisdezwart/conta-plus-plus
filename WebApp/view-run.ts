@@ -117,6 +117,8 @@ const parseContaFile = (
 const renderTick = (
 	tickNumber: number
 ) => {
+	const start = Date.now()
+
 	// Clear all ctxes
 
 	for (let i = 0; i < ctxes.length; i++) {
@@ -163,6 +165,32 @@ const renderTick = (
 	// Update graph
 
 	updateGraph(graphData)
+
+	// Update current data display
+
+	const infectedCountEl = document.querySelector<HTMLSpanElement>('span#infected')
+	const susceptibleCountEl = document.querySelector<HTMLSpanElement>('span#susceptible')
+	const recoveredCountEl = document.querySelector<HTMLSpanElement>('span#recovered')
+
+	infectedCountEl.innerText = graphData.infected.toString()
+	susceptibleCountEl.innerText = graphData.susceptible.toString()
+	recoveredCountEl.innerText = graphData.recovered.toString()
+
+	const duration = Date.now() - start
+	const timeout = Math.max(0, 16.7 - duration)
+
+	if (tickNumber != data.ticks.length) {
+		// Queue next tick
+
+		setTimeout(() => renderTick(tickNumber + 1), timeout)
+	}
+
+	if (tickNumber % 3 == 0) {
+		// Show FPS
+
+		const fpsEl = document.querySelector<HTMLSpanElement>('span#fps')
+		fpsEl.innerText = (1000 / duration).toFixed(1)
+	}
 }
 
 const startAnimation = () => {
@@ -174,24 +202,9 @@ const startAnimation = () => {
 
 	createGraph()
 
-	let i = 0
-	const renderNextTick = () => renderTick(i++)
+	// Render the ticks
 
-	// Render the first tick
-
-	renderNextTick()
-
-	// Render the next ticks
-
-	animationIntervalID = window.setInterval(() => {
-		renderNextTick()
-
-		// Stop the animation when we rendered all ticks
-
-		if (i == data.ticks.length) {
-			clearInterval(animationIntervalID)
-		}
-	}, 16.7)
+	renderTick(0)
 }
 
 // When page loads, show the run
