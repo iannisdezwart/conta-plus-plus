@@ -17,8 +17,17 @@
 			<h3><a href="/">Home</a> > <a href="/list-runs">Run List</a> > View Run</h3>
 
 			<div class="two-grid">
-				<div id="graph">
-					<!-- The plotly.js graph will be dynamically generated here -->
+				<div id="graph-container">
+					<div id="numbers">
+						<h3>FPS: <span id="fps">----</span></h3>
+						<h3>Infected: <span id="infected">-</span></h3>
+						<h3>Susceptible: <span id="susceptible">-</span></h3>
+						<h3>Recovered: <span id="recovered">-</span></h3>
+					</div>
+
+					<div id="graph">
+						<!-- The plotly.js graph will be dynamically generated here -->
+					</div>
 				</div>
 
 				<div class="communities">
