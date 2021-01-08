@@ -200,6 +200,22 @@ code {
 	font-family: 'Ubuntu Mono', monospace;
 }
 
+#numbers #infected-container {
+	color: #f33;
+}
+
+#numbers #incubating-container {
+	color: #fb3;
+}
+
+#numbers #susceptible-container {
+	color: #aaa;
+}
+
+#numbers #recovered-container {
+	color: #3f3;
+}
+
 #graph {
 	height: 100%;
 	margin: 0 2em;
