@@ -29,7 +29,11 @@ class Population {
 		int tick_count = 0;
 		bool social_distancing = false;
 
-		int infected_count = 0;
+		#ifdef MULTI_THREADED
+		atomic<int> infected_count;
+		#else
+		int infected_count;
+		#endif
 
 		RandomIntGenerator travel_rng;
 		RandomIntGenerator community_rng;
@@ -47,6 +51,10 @@ class Population {
 				,thread_pool(NUM_OF_THREADS)
 				#endif
 		{
+			// Initialise (atomic) int
+
+			infected_count = 0;
+
 			// Create all community vectors
 
 			for (int i = 0; i < settings.NUMBER_OF_COMMUNITIES; i++) {
