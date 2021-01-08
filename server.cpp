@@ -114,12 +114,14 @@ void run_simulator(const Request& req, Response& res)
 	// Collect the settings from the headers
 
 	string POPULATION_SIZE_H = req.get_header_value("population-size");
+	string MAX_TICKS_H = req.get_header_value("max-ticks");
 	string NUMBER_OF_COMMUNITIES_H = req.get_header_value("number-of-communities");
 	string HUMAN_MAX_VELOCITY_H = req.get_header_value("human-max-velocity");
 	string HUMAN_SPREAD_PROBABILITY_H = req.get_header_value("human-spread-probability");
 	string HUMAN_SPREAD_RANGE_H = req.get_header_value("human-spread-range");
 	string HUMAN_INCUBATION_PERIOD_H = req.get_header_value("human-incubation-period");
 	string HUMAN_INFECTION_DURATION_H = req.get_header_value("human-infection-duration");
+	string HUMAN_PROTECTION_DURATION_H = req.get_header_value("human-protection-duration");
 	string HUMAN_TRAVEL_RATIO_H = req.get_header_value("human-travel-ratio");
 	string SOCIAL_DISTANCING_THRESHOLD_H = req.get_header_value("social-distancing-threshold");
 	string SOCIAL_DISTANCING_RELEASE_H = req.get_header_value("social-distancing-release");
@@ -129,12 +131,14 @@ void run_simulator(const Request& req, Response& res)
 	// Convert the header values to the correct data types
 
 	int POPULATION_SIZE = atoi(POPULATION_SIZE_H.c_str());
+	int MAX_TICKS = atoi(MAX_TICKS_H.c_str());
   int NUMBER_OF_COMMUNITIES = atoi(NUMBER_OF_COMMUNITIES_H.c_str());
   double HUMAN_MAX_VELOCITY = atof(HUMAN_MAX_VELOCITY_H.c_str());
   double HUMAN_SPREAD_PROBABILITY = atof(HUMAN_SPREAD_PROBABILITY_H.c_str());
   int HUMAN_SPREAD_RANGE = atoi(HUMAN_SPREAD_RANGE_H.c_str());
 	int HUMAN_INCUBATION_PERIOD = atoi(HUMAN_INCUBATION_PERIOD_H.c_str());
   int HUMAN_INFECTION_DURATION = atoi(HUMAN_INFECTION_DURATION_H.c_str());
+  int HUMAN_PROTECTION_DURATION = atoi(HUMAN_PROTECTION_DURATION_H.c_str());
 	double HUMAN_TRAVEL_RATIO = atof(HUMAN_TRAVEL_RATIO_H.c_str());
 	int SOCIAL_DISTANCING_THRESHOLD = atoi(SOCIAL_DISTANCING_THRESHOLD_H.c_str());
 	int SOCIAL_DISTANCING_RELEASE = atoi(SOCIAL_DISTANCING_RELEASE_H.c_str());
@@ -143,12 +147,14 @@ void run_simulator(const Request& req, Response& res)
 
 	SimulationSettings *settings = new SimulationSettings {
 		.POPULATION_SIZE = POPULATION_SIZE,
+		.MAX_TICKS = MAX_TICKS,
 		.NUMBER_OF_COMMUNITIES = NUMBER_OF_COMMUNITIES,
 		.HUMAN_MAX_VELOCITY = HUMAN_MAX_VELOCITY,
 		.HUMAN_SPREAD_PROBABILITY = HUMAN_SPREAD_PROBABILITY,
 		.HUMAN_SPREAD_RANGE = HUMAN_SPREAD_RANGE,
 		.HUMAN_INCUBATION_PERIOD = HUMAN_INCUBATION_PERIOD,
 		.HUMAN_INFECTION_DURATION = HUMAN_INFECTION_DURATION,
+		.HUMAN_PROTECTION_DURATION = HUMAN_PROTECTION_DURATION,
 		.HUMAN_TRAVEL_RATIO = HUMAN_TRAVEL_RATIO,
 		.SOCIAL_DISTANCING_THRESHOLD = SOCIAL_DISTANCING_THRESHOLD,
 		.SOCIAL_DISTANCING_RELEASE = SOCIAL_DISTANCING_RELEASE,
@@ -159,12 +165,14 @@ void run_simulator(const Request& req, Response& res)
 	printf("Running a simulation with these settings:\n");
 
 	printf("POPULATION_SIZE: %d\n", POPULATION_SIZE);
+	printf("MAX_TICKS: %d\n", MAX_TICKS);
 	printf("NUMBER_OF_COMMUNITIES: %d\n", NUMBER_OF_COMMUNITIES);
 	printf("HUMAN_MAX_VELOCITY: %f\n", HUMAN_MAX_VELOCITY);
 	printf("HUMAN_SPREAD_PROBABILITY: %f\n", HUMAN_SPREAD_PROBABILITY);
 	printf("HUMAN_SPREAD_RANGE: %d\n", HUMAN_SPREAD_RANGE);
 	printf("HUMAN_INCUBATION_PERIOD: %d\n", HUMAN_INCUBATION_PERIOD);
 	printf("HUMAN_INFECTION_DURATION: %d\n", HUMAN_INFECTION_DURATION);
+	printf("HUMAN_PROTECTION_DURATION: %d\n", HUMAN_PROTECTION_DURATION);
 	printf("HUMAN_TRAVEL_RATIO: %f\n", HUMAN_TRAVEL_RATIO);
 	printf("SOCIAL_DISTANCING_THRESHOLD: %d\n", SOCIAL_DISTANCING_THRESHOLD);
 	printf("SOCIAL_DISTANCING_RELEASE: %d\n", SOCIAL_DISTANCING_RELEASE);

@@ -31,6 +31,7 @@ void simulate(
 	while (population.infected_count) {
 		population.tick();
 		if (tick_callback != NULL) tick_callback(i++, population);
+		if (i >= simulation_settings.MAX_TICKS) break;
 	}
 
 	file.close();

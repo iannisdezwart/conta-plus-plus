@@ -292,13 +292,24 @@ class Population {
 						}
 					}
 
-
 					// Recover after HUMAN_INFECTION_DURATION ticks
 
 					if (human->ticks_infected >= settings.HUMAN_INFECTION_DURATION) {
 						human->infected = false;
+						human->ticks_infected = 0;
 						infected_count--;
 						human->recovered = true;
+						human->ticks_recovered = 0;
+					}
+				}
+
+				// Handle resusceptibility
+
+				if (human->recovered) {
+					if (human->ticks_recovered > settings.HUMAN_PROTECTION_DURATION) {
+						human->recovered = false;
+					} else {
+						human->ticks_recovered++;
 					}
 				}
 			});

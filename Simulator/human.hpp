@@ -22,8 +22,9 @@ class Human {
 
 		bool infected = false;
 		int ticks_infected = 0;
-		bool recovered = false;
 		bool incubating = false;
+		bool recovered = false;
+		int ticks_recovered = 0;
 
 		uint8_t community_id;
 
