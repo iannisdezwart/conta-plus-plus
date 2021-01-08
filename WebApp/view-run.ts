@@ -195,7 +195,7 @@ const renderTick = (
 	if (tickNumber + 1 != data.ticks.length) {
 		// Queue next tick
 
-		setTimeout(() => renderTick(tickNumber + 1), timeout)
+		animationIntervalID = setTimeout(() => renderTick(tickNumber + 1), timeout)
 	}
 
 	if (tickNumber % 3 == 0) {
@@ -209,7 +209,7 @@ const renderTick = (
 const startAnimation = () => {
 	// Reset the interval
 
-	clearInterval(animationIntervalID)
+	clearTimeout(animationIntervalID)
 
 	// Reset the graph
 
