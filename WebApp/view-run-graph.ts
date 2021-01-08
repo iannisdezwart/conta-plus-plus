@@ -150,7 +150,6 @@ interface GraphData {
 
 const updateGraph = (newData: GraphData) => {
 	const { tick, susceptible, infected, recovered } = newData
-	console.log('graphdata', newData)
 
 	infectedData.x[tick] = tick
 	infectedData.y[tick] = infected
