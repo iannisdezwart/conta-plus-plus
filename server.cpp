@@ -4,7 +4,7 @@
 
 // Run simulations in multi threaded mode
 
-// #define MULTI_THREADED
+#define MULTI_THREADED
 
 #include "Simulator/simulator.hpp"
 #include "Simulator/simulation_settings.hpp"
@@ -176,7 +176,11 @@ void run_simulator(const Request& req, Response& res)
 				[&sink](int tick_number, Population& population) {
 					// Send the tick number
 
-					string output = "Rendered tick " + to_string(tick_number) + '\n';
+					string output =
+						"Rendered tick " + to_string(tick_number)
+						+ ", infected_count = "+ to_string(population.infected_count)
+						+ '\n';
+
 					sink.write(output.c_str(), output.size());
 				}
 			);

@@ -12,8 +12,8 @@ using namespace std;
 int main()
 {
 	SimulationSettings simulation_settings = {
-		.POPULATION_SIZE = 1000,
-		.NUMBER_OF_COMMUNITIES = 12,
+		.POPULATION_SIZE = 4000,
+		.NUMBER_OF_COMMUNITIES = 48,
 		.HUMAN_MAX_VELOCITY = 5.0,
 		.HUMAN_SPREAD_PROBABILITY = 0.5,
 		.HUMAN_SPREAD_RANGE = 20,
@@ -26,6 +26,13 @@ int main()
 
 	simulate("output/123.conta", simulation_settings,
 		[](int tick_number, Population& population) {
-			printf("Rendered tick %d\n", tick_number);
+			#ifdef MULTI_THREADED
+			int infected_count = population.infected_count.load();
+			#else
+			int infected_count = population.infected_count;
+			#endif
+
+			printf("Rendered tick %d, infected_count = %d\n",
+				tick_number, infected_count);
 		});
 }
