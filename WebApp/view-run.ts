@@ -179,7 +179,7 @@ const renderTick = (
 	const duration = Date.now() - start
 	const timeout = Math.max(0, 16.7 - duration)
 
-	if (tickNumber != data.ticks.length) {
+	if (tickNumber + 1 != data.ticks.length) {
 		// Queue next tick
 
 		setTimeout(() => renderTick(tickNumber + 1), timeout)
