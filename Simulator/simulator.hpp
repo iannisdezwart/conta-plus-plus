@@ -26,9 +26,11 @@ void simulate(
 
 	if (tick_callback != NULL) tick_callback(0, population);
 
-	for (int i = 1; i <= 1000; i++) {
+	int i = 0;
+
+	while (population.infected_count) {
 		population.tick();
-		if (tick_callback != NULL) tick_callback(i, population);
+		if (tick_callback != NULL) tick_callback(i++, population);
 	}
 
 	file.close();
