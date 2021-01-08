@@ -197,10 +197,6 @@ addEventListener('load', async () => {
 	const output = await getRunOutput(searchParams.get('id'))
 	data = parseContaFile(output)
 
-	// Create graph
-
-	createGraph()
-
 	// Create communities
 
 	const canvassesContainer = document.querySelector<HTMLDivElement>('.communities')
@@ -223,6 +219,10 @@ addEventListener('load', async () => {
 		canvasses[i] = canvas
 		ctxes[i] = canvas.getContext('2d')
 	}
+
+	// Create graph
+
+	createGraph()
 
 	console.log(data)
 })
