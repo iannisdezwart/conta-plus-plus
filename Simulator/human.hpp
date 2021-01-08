@@ -23,6 +23,7 @@ class Human {
 		bool infected = false;
 		int ticks_infected = 0;
 		bool recovered = false;
+		bool incubating = false;
 
 		uint8_t community_id;
 
@@ -104,7 +105,7 @@ class Human {
 				// [ uint8 COMMUNITY_ID ]
 				// [ uint9 POSITION_X ]
 				// [ uint9 POSITION_Y ]
-				// [ uint6 FLAGS ] ( 0 0 0 0 0 0 RECOVERED INFECTED )
+				// [ uint6 FLAGS ] ( 0 0 0 0 0 INCUBATING RECOVERED INFECTED )
 
 			uint32_t human = 0;
 
@@ -119,7 +120,7 @@ class Human {
 
 			// Write the flags to bytes [ 5 - 0 ]
 
-			uint8_t flags = (recovered << 1) | (infected << 0);
+			uint8_t flags = (incubating << 2) | (recovered << 1) | (infected << 0);
 			human |= flags;
 
 			buffer.write(human);

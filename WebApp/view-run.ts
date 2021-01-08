@@ -10,6 +10,7 @@ interface HumanFormat {
 	positionY: number
 	infected: boolean
 	recovered: boolean
+	incubating: boolean
 }
 
 let data: ContaFileFormat
@@ -50,7 +51,7 @@ const getRunOutput = (
 	// [ uint8 COMMUNITY_ID ]
 	// [ uint9 POSITION_X ]
 	// [ uint9 POSITION_Y ]
-	// [ uint6 FLAGS ] ( 0 0 0 0 RECOVERED INFECTED )
+	// [ uint6 FLAGS ] ( 0 0 0 INCUBAING RECOVERED INFECTED )
 
 const parseContaFile = (
 	buffer: ArrayBuffer
@@ -102,12 +103,13 @@ const parseContaFile = (
 
 			const infected = Boolean(flags & (1 << 0))
 			const recovered = Boolean(flags & (1 << 1))
+			const incubating = Boolean(flags & (1 << 2))
 
 			// JS, why are you doing this to me???
 
 			const actualCommunityID = (communityID < 0) ? communityID + 64 : communityID
 
-			humans[i] = { communityID: actualCommunityID, positionX, positionY, infected, recovered }
+			humans[i] = { communityID: actualCommunityID, positionX, positionY, infected, recovered, incubating }
 		}
 	}
 
@@ -130,8 +132,9 @@ const renderTick = (
 	const graphData: GraphData = {
 		tick: tickNumber,
 		infected: 0,
-		recovered: 0,
-		susceptible: 0
+		incubating: 0,
+		susceptible: 0,
+		recovered: 0
 	}
 
 	for (let i = 0; i < data.populationSize; i++) {
@@ -140,19 +143,27 @@ const renderTick = (
 			positionX,
 			positionY,
 			infected,
-			recovered
+			recovered,
+			incubating
 		} = data.ticks[tickNumber][i]
 
-		if (infected) graphData.infected++
-		else if (!recovered) graphData.susceptible++
-
+		if (!recovered && !infected) graphData.susceptible++
+		if (infected)
+			if (incubating) graphData.incubating++
+			else graphData.infected++
 		if (recovered) graphData.recovered++
 
 		const ctx = ctxes[communityID]
 
 		ctx.beginPath()
 		ctx.arc(positionX, positionY, 3, 0, 2 * Math.PI)
-		ctx.fillStyle = recovered ? '#3f3' : infected ? '#f33' : '#aaa'
+
+		if (recovered) ctx.fillStyle = '#3f3'
+		else if (infected)
+			if (incubating) ctx.fillStyle = '#fb3'
+			else ctx.fillStyle = '#f33'
+		else ctx.fillStyle = '#aaa'
+
 		ctx.fill()
 		ctx.closePath()
 	}
@@ -169,10 +180,12 @@ const renderTick = (
 	// Update current data display
 
 	const infectedCountEl = document.querySelector<HTMLSpanElement>('span#infected')
+	const incubatingCountEl = document.querySelector<HTMLSpanElement>('span#incubating')
 	const susceptibleCountEl = document.querySelector<HTMLSpanElement>('span#susceptible')
 	const recoveredCountEl = document.querySelector<HTMLSpanElement>('span#recovered')
 
 	infectedCountEl.innerText = graphData.infected.toString()
+	incubatingCountEl.innerText = graphData.incubating.toString()
 	susceptibleCountEl.innerText = graphData.susceptible.toString()
 	recoveredCountEl.innerText = graphData.recovered.toString()
 

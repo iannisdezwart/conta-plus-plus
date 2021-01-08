@@ -241,7 +241,7 @@ class Population {
 
 				Vector<2> acc = Vector<2>::from_angle(random_float() * 2 * M_PI);
 
-				if (social_distancing) {
+				if (social_distancing && random_float() < settings.SOCIAL_DISTANCING_RATIO) {
 					// Keep distance from other Humans
 
 					for (int j = 0; j < communities[com_i].size(); j++) {
@@ -258,34 +258,40 @@ class Population {
 
 				human->move(acc);
 
-				// Infect other Humans if this Human is infected
+				// Handle infection
 
 				if (human->infected) {
 					vector<Human *>& humans = communities[com_i];
 					human->ticks_infected++;
 
-					// Infect each other Human that is within the HUMAN_SPREAD_RANGE,
-					// with a probability of HUMAN_SPREAD_PROBABILITY
+					// After the incubation period ...
 
-					// Todo: add incubation period here as well
+					if (human->ticks_infected > settings.HUMAN_INCUBATION_PERIOD) {
+						human->incubating = false;
 
-					for (int k = 0; k < humans.size(); k++) {
-						if (i != k) {
-							Human *other_human = humans[k];
+						// ... infect each other Human that is within the HUMAN_SPREAD_RANGE,
+						// with a probability of HUMAN_SPREAD_PROBABILITY
 
-							if (!other_human->susceptible()) continue;
+						for (int k = 0; k < humans.size(); k++) {
+							if (i != k) {
+								Human *other_human = humans[k];
 
-							double distance = human->position.distance(other_human->position);
+								if (!other_human->susceptible()) continue;
 
-							if (
-								distance <= settings.HUMAN_SPREAD_RANGE
-								&& random_float() < settings.HUMAN_SPREAD_PROBABILITY
-							) {
-								other_human->infected = true;
-								infected_count++;
+								double distance = human->position.distance(other_human->position);
+
+								if (
+									distance <= settings.HUMAN_SPREAD_RANGE
+									&& random_float() < settings.HUMAN_SPREAD_PROBABILITY
+								) {
+									other_human->infected = true;
+									infected_count++;
+									other_human->incubating = true;
+								}
 							}
 						}
 					}
+
 
 					// Recover after HUMAN_INFECTION_DURATION ticks
 

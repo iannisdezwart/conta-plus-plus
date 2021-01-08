@@ -21,7 +21,19 @@ const infectedData: Partial<Plotly.PlotData> = {
   type: 'scatter',
   mode: 'lines',
   line: {
-    color: '#c55',
+    color: '#f33',
+    width: 3
+  }
+}
+
+const incubatingData: Partial<Plotly.PlotData> = {
+  x: [],
+  y: [],
+  name: 'Incubating',
+  type: 'scatter',
+  mode: 'lines',
+  line: {
+    color: '#fb3',
     width: 3
   }
 }
@@ -33,7 +45,7 @@ const susceptibleData: Partial<Plotly.PlotData> = {
   type: 'scatter',
   mode: 'lines',
   line: {
-    color: '#55c',
+    color: '#aaa',
     width: 3
   }
 }
@@ -45,7 +57,7 @@ const recoveredData: Partial<Plotly.PlotData> = {
   type: 'scatter',
   mode: 'lines',
   line: {
-    color: '#5c5',
+    color: '#3f3',
     width: 3
   }
 }
@@ -125,6 +137,9 @@ const createGraph = () => {
 	infectedData.x = []
 	infectedData.y = []
 
+	incubatingData.x = []
+	incubatingData.y = []
+
 	susceptibleData.x = []
 	susceptibleData.y = []
 
@@ -134,6 +149,7 @@ const createGraph = () => {
 	Plotly.newPlot('graph', [
 		// cumulativeInfectionsData,
 		infectedData,
+		incubatingData,
 		susceptibleData,
 		recoveredData,
 		// deadData,
@@ -143,16 +159,20 @@ const createGraph = () => {
 
 interface GraphData {
 	tick: number
-	susceptible: number
 	infected: number
+	incubating: number
+	susceptible: number
 	recovered: number
 }
 
 const updateGraph = (newData: GraphData) => {
-	const { tick, susceptible, infected, recovered } = newData
+	const { tick, infected, incubating, susceptible, recovered } = newData
 
 	infectedData.x[tick] = tick
 	infectedData.y[tick] = infected
+
+	incubatingData.x[tick] = tick
+	incubatingData.y[tick] = incubating
 
 	susceptibleData.x[tick] = tick
 	susceptibleData.y[tick] = susceptible

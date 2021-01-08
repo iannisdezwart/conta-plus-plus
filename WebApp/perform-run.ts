@@ -11,10 +11,12 @@ const performRun = () => {
 	req.setRequestHeader('human-max-velocity', get('#human-max-velocity'))
 	req.setRequestHeader('human-spread-probability', get('#human-spread-probability'))
 	req.setRequestHeader('human-spread-range', get('#human-spread-range'))
+	req.setRequestHeader('human-incubation-period', get('#human-incubation-period'))
 	req.setRequestHeader('human-infection-duration', get('#human-infection-duration'))
 	req.setRequestHeader('human-travel-ratio', get('#human-travel-ratio'))
 	req.setRequestHeader('social-distancing-threshold', get('#social-distancing-threshold'))
 	req.setRequestHeader('social-distancing-release', get('#social-distancing-release'))
+	req.setRequestHeader('social-distancing-radius', get('#social-distancing-radius'))
 	req.setRequestHeader('social-distancing-ratio', get('#social-distancing-ratio'))
 
 	const writeToConsole = (
