@@ -26,9 +26,9 @@ class Human {
 		bool recovered = false;
 		int ticks_recovered = 0;
 
-		uint8_t community_id;
+		uint16_t community_id;
 
-		Human(Vector<2> starting_position, uint8_t starting_community, SimulationSettings& simulation_settings) : settings(simulation_settings)
+		Human(Vector<2> starting_position, uint16_t starting_community, SimulationSettings& simulation_settings) : settings(simulation_settings)
 		{
 			position = starting_position;
 			velocity.nullify();
@@ -103,23 +103,23 @@ class Human {
 
 			// Format:
 			// [ uint32 HUMAN ]:
-				// [ uint8 COMMUNITY_ID ]
+				// [ uint11 COMMUNITY_ID ]
 				// [ uint9 POSITION_X ]
 				// [ uint9 POSITION_Y ]
-				// [ uint6 FLAGS ] ( 0 0 0 0 0 INCUBATING RECOVERED INFECTED )
+				// [ uint3 FLAGS ] ( INCUBATING RECOVERED INFECTED )
 
 			uint32_t human = 0;
 
-			// Write the community ID to bytes [ 32 - 25 ]
+			// Write the community ID to bytes [ 31 - 21 ]
 
-			human |= community_id << 24;
+			human |= community_id << 21;
 
-			// Write the X and Y positions to bytes [ 23 - 15 ] and [ 14 - 6 ]
+			// Write the X and Y positions to bytes [ 20 - 12 ] and [ 11 - 3 ]
 
-			human |= ((uint16_t) position[0] << 15);
-			human |= ((uint16_t) position[1] << 6);
+			human |= ((uint16_t) position[0] << 12);
+			human |= ((uint16_t) position[1] << 3);
 
-			// Write the flags to bytes [ 5 - 0 ]
+			// Write the flags to bytes [ 2 - 0 ]
 
 			uint8_t flags = (incubating << 2) | (recovered << 1) | (infected << 0);
 			human |= flags;

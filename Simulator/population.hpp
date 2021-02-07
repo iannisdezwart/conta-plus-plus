@@ -76,7 +76,7 @@ class Population {
 
 				// Calculate a random community id
 
-				uint8_t starting_community = community_rng.generate();
+				uint16_t starting_community = community_rng.generate();
 
 				// Create the Human
 
@@ -193,7 +193,7 @@ class Population {
 			}
 		}
 
-		void move_human(uint8_t old_community_id, int index, uint8_t new_community_id)
+		void move_human(uint16_t old_community_id, int index, uint16_t new_community_id)
 		{
 			Human *human = communities[old_community_id][index];
 
