@@ -14,7 +14,7 @@
 	<body>
 		<div class="page">
 			<h1>Conta++ WebApp</h1>
-			<h3><a href="/">Home</a> > <a href="/list-runs">Run List</a> > View Run</h3>
+			<h3><a href="/">Home</a> > <a href="/list-runs">Run List</a> > View Run (<span id="memory-mode-indicator"></span>)</h3>
 
 			<div class="two-grid">
 				<div id="graph-container">
@@ -44,6 +44,7 @@
 				</div>
 
 				<a class="button" onclick="startAnimation()">Play</a>
+				<a class="button" id="memory-mode-button" onclick="toggleMemoryMode()"></a>
 			</div>
 		</div>
 	</body>

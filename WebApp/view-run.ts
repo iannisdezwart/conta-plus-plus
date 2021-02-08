@@ -1,3 +1,9 @@
+interface ContaFileFormatLowMem {
+	populationSize: number
+	communities: number
+	ticks: Uint32Array[]
+}
+
 interface ContaFileFormat {
 	populationSize: number
 	communities: number
@@ -13,10 +19,13 @@ interface HumanFormat {
 	incubating: boolean
 }
 
-let data: ContaFileFormat
+let data: ContaFileFormat | ContaFileFormatLowMem
 let canvasses: HTMLCanvasElement[]
 let ctxes: CanvasRenderingContext2D[]
 let animationIntervalID: number
+
+const searchParams = new URLSearchParams(location.search)
+const lowMemMode = searchParams.has('low-memory')
 
 // This function gets a run output
 
@@ -52,6 +61,75 @@ const getRunOutput = (
 	// [ uint9 POSITION_X ]
 	// [ uint9 POSITION_Y ]
 	// [ uint3 FLAGS ] ( INCUBAING RECOVERED INFECTED )
+
+const readHuman = (human: number) => {
+	// Forgive me for the below formatting please...
+	// It's better than centre aligning my code ¯\_(ツ)_/¯
+
+	const communityID = (human & 0b11111111111000000000000000000000) >> 21
+	const positionX   = (human & 0b00000000000111111111000000000000) >> 12
+	const positionY   = (human & 0b00000000000000000000111111111000) >> 3
+	const flags       = (human & 0b00000000000000000000000000000111)
+
+	const infected = Boolean(flags & (1 << 0))
+	const recovered = Boolean(flags & (1 << 1))
+	const incubating = Boolean(flags & (1 << 2))
+
+	// JS, why are you doing this to me???
+
+	const actualCommunityID = (communityID < 0) ? communityID + 2048 : communityID
+
+	return {
+		communityID: actualCommunityID,
+		positionX, positionY,
+		infected, recovered, incubating
+	}
+}
+
+const parseContaFileLowMem = (
+	buffer: ArrayBuffer
+): ContaFileFormatLowMem => {
+	const contaFileFormat: ContaFileFormatLowMem = {
+		populationSize: null,
+		communities: null,
+		ticks: []
+	}
+
+	const fileBuffer = new FileBuffer(buffer)
+
+	// Expect conta file header
+
+	if (fileBuffer.readString(6) != 'CONTA\n') {
+		throw new Error(`Invalid file header`)
+	}
+
+	// Read the population size
+
+	contaFileFormat.populationSize = fileBuffer.readInt32()
+
+	// Read the number of communities
+
+	contaFileFormat.communities = fileBuffer.readInt32()
+
+	// Expect newline
+
+	if (fileBuffer.readChar() != '\n') {
+		throw new Error(`Expected newline after the file header, found another character`)
+	}
+
+	// Read all ticks
+
+	while (fileBuffer.offset < fileBuffer.size()) {
+		contaFileFormat.ticks.push(new Uint32Array(contaFileFormat.populationSize))
+		const humans = contaFileFormat.ticks[contaFileFormat.ticks.length - 1]
+
+		for (let i = 0; i < contaFileFormat.populationSize; i++) {
+			humans[i] = fileBuffer.readUint32()
+		}
+	}
+
+	return contaFileFormat
+}
 
 const parseContaFile = (
 	buffer: ArrayBuffer
@@ -116,6 +194,72 @@ const parseContaFile = (
 	return contaFileFormat
 }
 
+const renderTickLowMem = (
+	tickNumber: number
+) => {
+	const start = Date.now()
+
+	// Gather Stats
+
+	const graphData: GraphData = {
+		tick: tickNumber,
+		infected: 0,
+		incubating: 0,
+		susceptible: 0,
+		recovered: 0
+	}
+
+	for (let i = 0; i < data.populationSize; i++) {
+		data = data as ContaFileFormatLowMem
+
+		const {
+			infected, recovered, incubating
+		} = readHuman(data.ticks[tickNumber][i])
+
+		if (!recovered && !infected) graphData.susceptible++
+		if (infected)
+			if (incubating) graphData.incubating++
+			else graphData.infected++
+		if (recovered) graphData.recovered++
+	}
+
+	// Update progress bar
+
+	const progressBar = document.querySelector<HTMLSpanElement>('.progress')
+	progressBar.style.width = (tickNumber / data.ticks.length * 100).toString() + '%'
+
+	// Update graph
+
+	updateGraph(graphData)
+
+	// Update current data display
+
+	const infectedCountEl = document.querySelector<HTMLSpanElement>('span#infected')
+	const incubatingCountEl = document.querySelector<HTMLSpanElement>('span#incubating')
+	const susceptibleCountEl = document.querySelector<HTMLSpanElement>('span#susceptible')
+	const recoveredCountEl = document.querySelector<HTMLSpanElement>('span#recovered')
+
+	infectedCountEl.innerText = graphData.infected.toString()
+	incubatingCountEl.innerText = graphData.incubating.toString()
+	susceptibleCountEl.innerText = graphData.susceptible.toString()
+	recoveredCountEl.innerText = graphData.recovered.toString()
+
+	const duration = Date.now() - start
+
+	if (tickNumber + 1 != data.ticks.length) {
+		// Queue next tick
+
+		animationIntervalID = setTimeout(() => renderTickLowMem(tickNumber + 1), 0)
+	}
+
+	if (tickNumber % 3 == 0) {
+		// Show FPS
+
+		const fpsEl = document.querySelector<HTMLSpanElement>('span#fps')
+		fpsEl.innerText = (1000 / duration).toFixed(1)
+	}
+}
+
 const renderTick = (
 	tickNumber: number
 ) => {
@@ -138,6 +282,8 @@ const renderTick = (
 	}
 
 	for (let i = 0; i < data.populationSize; i++) {
+		data = data as ContaFileFormat
+
 		const {
 			communityID,
 			positionX,
@@ -211,6 +357,13 @@ const startAnimation = () => {
 
 	clearTimeout(animationIntervalID)
 
+	// Check if we're on low memory mode
+
+	if (lowMemMode) {
+		renderTickLowMem(0)
+		return
+	}
+
 	// Reset the graph
 
 	createGraph()
@@ -223,9 +376,12 @@ const startAnimation = () => {
 // When page loads, show the run
 
 addEventListener('load', async () => {
-	const searchParams = new URLSearchParams(location.search)
+	document.querySelector<HTMLSpanElement>('#memory-mode-indicator').innerText =
+		lowMemMode ? 'Low Memory Mode' : 'Regular Memory Mode'
+	document.querySelector<HTMLButtonElement>('#memory-mode-button').innerText =
+		lowMemMode ? 'Switch to Regular Memory Mode' : 'Switch to Low Memory Mode'
 	const output = await getRunOutput(searchParams.get('id'))
-	data = parseContaFile(output)
+	data = lowMemMode ? parseContaFileLowMem(output) : parseContaFile(output)
 
 	// Create communities
 
@@ -256,3 +412,15 @@ addEventListener('load', async () => {
 
 	console.log(data)
 })
+
+// Toggle low memory mode
+
+const toggleMemoryMode = () => {
+	if (lowMemMode) {
+		searchParams.delete('low-memory')
+	} else {
+		searchParams.set('low-memory', '1')
+	}
+
+	location.search = '?' + searchParams.toString()
+}
