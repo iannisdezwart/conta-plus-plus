@@ -4,7 +4,7 @@ A C++ rewrite of my previous project [ContaJS](https://github.com/iannisdezwart/
 
 Conta++ is a C++ epidemic simulator.
 The code in this repository includes the actual Conta++ API,
-and a server as well as a webapp to communicate with it.
+and a server as well as a web app to communicate with it.
 
 ### Compilation of the server
 
@@ -18,6 +18,7 @@ $ make clean && make
 ```
 
 This will create the executable file `server`.
+Run the executable and open `http://localhost:1337/` in your browser, where you can find the web app.
 
 ### Serverless usage of the Conta++ API
 
